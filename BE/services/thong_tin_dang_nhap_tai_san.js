@@ -1,0 +1,299 @@
+const {
+    ThongTinDangNhapTaiSan,
+} = require("../model/thong_tin_dang_nhap_tai_san");
+const { sequelize } = require("../config/database");
+const { ChiTietHanhDong } = require("../model/chi_tiet_hanh_dong");
+const { PhongBan } = require("../model/phong_ban");
+const { ThongBao } = require("../model/thong_bao");
+const { TaiKhoan } = require("../model/tai_khoan");
+
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const postThongTinDangNhapTaiSan = async (data, user) => {
+    const { TaiSanId, nguoi_dai_dien_id, nguoi_nhan_id, thong_tin, ngay_thu_hoi } = data;
+    const nguoinhan = await TaiKhoan.findByPk(nguoi_nhan_id);
+    const hashed = await bcrypt.hash(thong_tin.password, 10);
+    thong_tin.password = hashed;
+    try {
+        // Tạo bản ghi Thông tin đăng nhập tài sản
+        const thong_tin_dang_nhap_tai_san = await ThongTinDangNhapTaiSan.create({
+            nguoi_dai_dien_id,
+            nguoi_nhan_id,
+            thong_tin,
+            ngay_thu_hoi,
+            TaiSanId,
+            nguoi_tao: user.id,
+        });
+
+        const value = {
+            loai_hanh_dong: `Thêm thông tin đăng nhập tài sản cho nhân viên ${nguoinhan.dataValues.ho_ten}`,
+            HanhDongId: user.hanh_dong,
+        };
+        const value1 = {
+            noi_dung: `Thêm thông tin đăng nhập tài sản cho nhân viên ${nguoinhan.dataValues.ho_ten}`,
+            TaiKhoanId: nguoi_nhan_id
+        }
+        await ChiTietHanhDong.create(value);
+        await ThongBao.create(value1);
+
+        return thong_tin_dang_nhap_tai_san;
+    } catch (error) {
+        console.log(error);
+        return "error";
+    }
+};
+
+const getThongTinDangNhapTaiSan = async (value, user) => {
+    try {
+        let conditions = [];
+        let actionDetails = [];
+        let moTaHanhDong = "Xem thông tin đăng nhập tài sản";
+        let page = value.page || 1;
+        value.page = page;
+        if (value) {
+            if (value.nhan_vien) {
+                actionDetails.push(`Tên nhân viên: ${value.nhan_vien}`);
+                conditions.push(`tk1.ho_ten ILIKE '%${value.nhan_vien}%'`);
+            }
+
+
+            if (value.id_phong_ban) {
+                const phong_ban = PhongBan.findByPk(value.id_phong_ban);
+                conditions.push(`pb.id = '${value.id_phong_ban}'`);
+                actionDetails.push(`phòng ban ID: ${phong_ban.ten}`);
+            }
+            if (value.ten_danh_muc_tai_san) {
+                conditions.push(`dmts.ten = '${value.ten_danh_muc_tai_san}'`);
+                actionDetails.push(`danh mục tài sản: ${value.ten_danh_muc_tai_san}`);
+            }
+        }
+
+        let where = "";
+        if (conditions.length > 0) {
+            where = " WHERE " + conditions.join(" AND ");
+
+        }
+        if (actionDetails.length > 0) {
+            moTaHanhDong += " với bộ lọc " + actionDetails.join(", ");
+        }
+        const sql = `SELECT
+                    ttdn.id,
+                    ttdn.thong_tin,
+                    ttdn.ngay_cap,
+                    ttdn.trang_thai,
+                    ttdn.ngay_thu_hoi,
+                    ts.ten_tai_san,
+                    ts.ten_nha_cung_cap,
+                    dmts.ten AS ten_danh_muc_tai_san,
+                    tk1.ho_ten AS ho_ten_nguoi_nhan,
+                    tk1.cap AS cap,
+                    tk2.ho_ten AS ho_ten_nguoi_yeu_cau,
+                    pb.ten AS ten_phong_ban,
+                    pb.id AS phong_ban_id,
+                    COUNT(*) OVER() AS total_count
+                    FROM 
+                    thong_tin_dang_nhap_tai_san ttdn
+                    JOIN
+                    tai_san ts ON ts.id = ttdn.tai_san_id
+                    JOIN
+                    tai_khoan tk1 ON tk1.id = ttdn.nguoi_nhan_id
+                    JOIN
+                    tai_khoan tk2 ON tk2.id = ttdn.nguoi_dai_dien_id
+                    JOIN
+                    danh_muc_tai_san dmts ON dmts.id = ts.danh_muc_tai_san_id
+                    JOIN
+                    phong_ban pb ON tk1.phong_ban_id = pb.id
+                    ${where}
+                    ORDER BY ttdn.ngay_cap DESC
+                    LIMIT 20 OFFSET (${value.page} - 1) * 20`;
+        
+
+        const data = await sequelize.query(sql, {
+            type: sequelize.QueryTypes.SELECT,
+        }); 
+        
+        const value1 = {
+            loai_hanh_dong: moTaHanhDong,
+            HanhDongId: user.hanh_dong,
+        };
+        await ChiTietHanhDong.create(value1);
+        return data;
+    } catch (error) {
+        console.log(error);
+        return "error";
+    }
+};
+
+const getThongTinTaiSan = async (id, user, page) => {
+    try {
+        const sql = `SELECT
+                        ttdn.id,
+                        ttdn.thong_tin,
+                        ttdn.ngay_cap,
+                        ttdn.trang_thai,
+                        ts.ten_tai_san,
+                        ts.ten_nha_cung_cap,
+                        dmts.ten AS ten_danh_muc_tai_san,
+                        tk1.ho_ten AS ho_ten_nguoi_nhan,
+                        tk2.ho_ten AS ho_ten_nguoi_yeu_cau,
+                        pb.ten AS ten_phong_ban,
+                        pb.id AS phong_ban_id,
+                        COUNT(*) OVER() AS total_count
+                    FROM 
+                        thong_tin_dang_nhap_tai_san ttdn
+                    JOIN
+                        tai_san ts ON ts.id = ttdn.tai_san_id
+                    JOIN
+                        tai_khoan tk1 ON tk1.id = ttdn.nguoi_nhan_id
+                    JOIN
+                        tai_khoan tk2 ON tk2.id = ttdn.nguoi_dai_dien_id
+                    JOIN
+                        danh_muc_tai_san dmts ON dmts.id = ts.danh_muc_tai_san_id
+                    JOIN
+                        phong_ban pb ON tk1.phong_ban_id = pb.id
+                    WHERE
+                        tk1.id = ${id} AND trang_thai != 'Đã thu hồi'
+                    ORDER BY ttdn.ngay_cap DESC
+                    LIMIT 20 OFFSET (${page} - 1) * 20
+                    ;`;
+        const data = await sequelize.query(sql, {
+            type: sequelize.QueryTypes.SELECT,
+        });
+        const value = {
+            loai_hanh_dong: `Xem thông tin đăng nhập tài sản cá nhân`,
+            HanhDongId: user.hanh_dong,
+        };
+        await ChiTietHanhDong.create(value);
+        return data;
+    } catch (error) {
+        console.log(error);
+        return "error";
+    }
+};
+
+const thongBaoHetHan = async (id, user) => {
+    try {
+        let where = ``;
+        let actionDetails = [];
+
+        if (id.phong_ban_id) {
+            where = where + `pb.id = ${id.phong_ban_id} AND `;
+            const phong_ban = PhongBan.findByPk(id.phong_ban_id);
+            actionDetails.push(`phòng ban : ${phong_ban.ten}`);
+        }
+        const sql = `SELECT
+                        ttdn.id,
+                        ttdn.thong_tin,
+                        ttdn.ngay_cap,
+                        ttdn.ngay_thu_hoi,
+                        ttdn.trang_thai,
+                        ts.ten_tai_san,
+                        ts.id AS tai_san_id,
+                        ts.ten_nha_cung_cap,
+                        pb.ten AS ten_phong_ban,
+                        tk1.username AS mail_nguoi_nhan,
+                        tk1.ho_ten AS ho_ten_nguoi_nhan,
+                        tk2.ho_ten AS ho_ten_nguoi_dai_dien,
+                        tk2.username AS mail_nguoi_dai_dien,
+                        EXTRACT(DAY FROM (ttdn.ngay_thu_hoi - NOW())) AS so_ngay_con_lai
+                    FROM 
+                        thong_tin_dang_nhap_tai_san ttdn
+                    JOIN
+                        tai_san ts ON ts.id = ttdn.tai_san_id
+                    JOIN
+                        tai_khoan tk1 ON tk1.id = ttdn.nguoi_nhan_id
+                    JOIN
+                        tai_khoan tk2 ON tk2.id = ttdn.nguoi_dai_dien_id
+                    JOIN
+                        phong_ban pb ON tk1.phong_ban_id = pb.id
+                    WHERE ${where}
+                        EXTRACT(DAY FROM (ttdn.ngay_thu_hoi - NOW())) IN (30, 10, 3, 0, -3);
+                    `;
+
+        const data = await sequelize.query(sql, {
+            type: sequelize.QueryTypes.SELECT,
+        });
+        let moTaHanhDong = "Xem thông báo hết hạn";
+        if (actionDetails.length > 0) {
+            moTaHanhDong += " với bộ lọc " + actionDetails.join(", ");
+        }
+        
+        const value = {
+            loai_hanh_dong: moTaHanhDong,
+            HanhDongId: user.hanh_dong,
+        };
+        await ChiTietHanhDong.create(value);
+        return data;
+    } catch (error) {
+        console.log(error);
+        return "error";
+    }
+};
+
+const patchThongTinDangNhapTaiSan = async (id, data, user) => {
+    try {
+        const record = await ThongTinDangNhapTaiSan.findByPk(id);
+        if (!record) throw new Error("Không tìm thấy bản ghi");
+        // === PHẦN 1: Cập nhật thong_tin (password) ===
+        if (data.thong_tin) {
+            const oldPasswordHashed = record.dataValues.thong_tin.password;
+
+            if (data.thong_tin.password) {
+                // Cấp 2 & 3: bắt buộc nhập password cũ
+                if ((user.cap === 2 || user.cap === 3) && !data.thong_tin.passwordOld) {
+                    throw new Error("Vui lòng nhập mật khẩu cũ để đổi mật khẩu.");
+                }
+
+                // Nếu nhập passwordOld thì kiểm tra
+                if (data.thong_tin.passwordOld) {
+                    const isMatch = await bcrypt.compare(
+                        data.thong_tin.passwordOld,
+                        oldPasswordHashed
+                    );
+                    if (!isMatch) throw new Error("Mật khẩu cũ không đúng!");
+                }
+
+                // Hash password mới
+                data.thong_tin.password = await bcrypt.hash(data.thong_tin.password, 10);
+            } else {
+                // Giữ nguyên password hiện tại
+                data.thong_tin.password = oldPasswordHashed;
+            }
+
+            // Xoá passwordOld tránh lưu vào DB
+            delete data.thong_tin.passwordOld;
+
+            // Cập nhật thong_tin
+            await record.update({ thong_tin: data.thong_tin });
+        }
+
+        // === PHẦN 2: Cập nhật ngày thu hồi và trạng thái ===
+        const updateFields = {};
+        if (data.ngay_thu_hoi) updateFields.ngay_thu_hoi = new Date(data.ngay_thu_hoi);
+        if (data.trang_thai) updateFields.trang_thai = data.trang_thai;
+
+        if (Object.keys(updateFields).length > 0) {
+            await record.update(updateFields);
+        }
+
+        // === Lưu hành động ===
+        await ChiTietHanhDong.create({
+            loai_hanh_dong: `Cập nhật thông tin đăng nhập tài sản của ${data.NguoiNhan || ""}`,
+            HanhDongId: user.hanh_dong,
+        });
+
+        return record;
+    } catch (error) {
+        console.log(error);
+        return { error: error.message || "error" };
+    }
+};
+
+
+module.exports = {
+    postThongTinDangNhapTaiSan,
+    patchThongTinDangNhapTaiSan,
+    getThongTinDangNhapTaiSan,
+    getThongTinTaiSan,
+    thongBaoHetHan,
+};

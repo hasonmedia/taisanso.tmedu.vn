@@ -1,0 +1,334 @@
+import { useState, useEffect } from "react";
+import { Eye, EyeOff, User, Lock, Phone, Building, Hash } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+
+export default function ThemTaiKhoan({
+    showModal,
+    setShowModal,
+    phong_ban,
+    onSubmit,
+    editUser,
+}) {
+    // Mock auth for demo
+    const user = useAuth();
+    // Thêm vào state ban đầu
+    const [formData, setFormData] = useState({
+        username: "",
+        password: "",
+        ho_ten: "",
+        sdt: "",
+        m_s_n_v: "",      // <-- Thêm mã số nhân viên
+        cap: user.user.cap === 1 ? 2 : 0,
+        PhongBanId: 0,
+    });
+
+
+    const [showPassword, setShowPassword] = useState(false);
+    const [errors, setErrors] = useState({});
+
+    useEffect(() => {
+        if (editUser) {
+            setFormData({
+                username: editUser.username || "",
+                password: "",
+                ho_ten: editUser.ho_ten || "",
+                sdt: editUser.sdt || "",
+                m_s_n_v: editUser.m_s_n_v || "",   // <-- thêm
+                cap: editUser.cap || availableOptions[0]?.value || 0,
+                PhongBanId: editUser.phong_ban_id || 0,
+            });
+        } else if (showModal) {
+            setFormData({
+                username: "",
+                password: "",
+                ho_ten: "",
+                sdt: "",
+                m_s_n_v: "",   // <-- thêm
+                cap: availableOptions[0]?.value || 0,
+                PhongBanId: 0,
+            });
+        }
+        setErrors({});
+    }, [editUser, showModal]);
+
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]:
+                name === "cap" || name === "PhongBanId" ? Number(value) || 0 : value,
+        }));
+
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: "" }));
+        }
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!formData.username.trim()) {
+            newErrors.username = "Username không được để trống";
+        }
+
+        if (!editUser && !formData.password.trim()) {
+            newErrors.password = "Password không được để trống";
+        }
+
+        if (!formData.ho_ten.trim()) {
+            newErrors.ho_ten = "Họ tên không được để trống";
+        }
+
+        if (!formData.sdt.trim()) {
+            newErrors.sdt = "Số điện thoại không được để trống";
+        }
+        if (!formData.m_s_n_v.trim()) {
+            newErrors.m_s_n_v = "Mã số nhân viên không được để trống";
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = async () => {
+        if (!validateForm()) return;
+
+        if (user?.cap === 1 && formData.cap === 0) {
+            alert("Bạn không có quyền tạo tài khoản cấp 0");
+            return;
+        }
+
+        await onSubmit(formData);
+        setShowModal(false);
+    };
+
+    if (!showModal) return null;
+    const capOptions = [
+        { value: 0, label: 'Root' },
+        { value: 1, label: 'Quản trị viên' },
+        { value: 2, label: 'Trưởng bộ phận' },
+        { value: 3, label: 'Nhân viên' },
+    ];
+    console.log("123", user)
+    // Tạo filter theo cap của user hiện tại
+    const availableOptions = capOptions.filter(opt => {
+        if (user.user.cap === 0) return true;       // cấp 0 chọn tất cả
+        if (user.user.cap === 1) return opt.value >= 2;
+        if (user.user.cap === 2) return opt.value === 3;
+        return false; // cấp 3 không chọn gì khác
+    });
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 mb-0">
+            <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+                {/* Header */}
+                <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-xl">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                        {editUser ? "Cập nhật tài khoản" : "Thêm tài khoản"}
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                        {editUser ? "Chỉnh sửa thông tin tài khoản" : "Tạo tài khoản người dùng mới"}
+                    </p>
+                </div>
+
+                {/* Form */}
+                <div className="px-4 sm:px-6 py-4 space-y-4 sm:space-y-5">
+                    {/* Mã số nhân viên */}
+                    <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <Hash className="w-4 h-4 text-gray-500" />
+                            Mã số nhân viên
+                            <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="m_s_n_v"
+                            value={formData.m_s_n_v}
+                            onChange={handleChange}
+                            placeholder="Nhập mã số nhân viên"
+                            className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${errors.ma_nv
+                                ? 'border-red-300 focus:ring-red-500'
+                                : 'border-gray-300 focus:ring-blue-500'
+                                }`}
+                        />
+                        {errors.m_s_n_v && (
+                            <p className="text-red-500 text-xs">{errors.m_s_n_v}</p>
+                        )}
+                    </div>
+
+                    {/* Username */}
+                    <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <User className="w-4 h-4 text-gray-500" />
+                            Username
+                            <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            placeholder="Nhập username"
+                            className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${errors.username
+                                ? 'border-red-300 focus:ring-red-500'
+                                : 'border-gray-300 focus:ring-blue-500'
+                                }`}
+                        />
+                        {errors.username && (
+                            <p className="text-red-500 text-xs">{errors.username}</p>
+                        )}
+                    </div>
+
+                    {/* Password */}
+                    <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <Lock className="w-4 h-4 text-gray-500" />
+                            Password
+                            {!editUser && <span className="text-red-500">*</span>}
+                        </label>
+                        <div className="relative">
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder={editUser ? "Để trống nếu không đổi" : "Nhập password"}
+                                className={`w-full px-3 py-2.5 pr-10 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${errors.password
+                                    ? 'border-red-300 focus:ring-red-500'
+                                    : 'border-gray-300 focus:ring-blue-500'
+                                    }`}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                            >
+                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
+                        </div>
+                        {errors.password && (
+                            <p className="text-red-500 text-xs">{errors.password}</p>
+                        )}
+                    </div>
+
+                    {/* Họ tên */}
+                    <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <User className="w-4 h-4 text-gray-500" />
+                            Họ tên
+                            <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="ho_ten"
+                            value={formData.ho_ten}
+                            onChange={handleChange}
+                            placeholder="Nhập họ và tên"
+                            className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${errors.ho_ten
+                                ? 'border-red-300 focus:ring-red-500'
+                                : 'border-gray-300 focus:ring-blue-500'
+                                }`}
+                        />
+                        {errors.ho_ten && (
+                            <p className="text-red-500 text-xs">{errors.ho_ten}</p>
+                        )}
+                    </div>
+
+                    {/* Số điện thoại */}
+                    <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <Phone className="w-4 h-4 text-gray-500" />
+                            Số điện thoại
+                            <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="tel"
+                            name="sdt"
+                            value={formData.sdt}
+                            onChange={handleChange}
+                            placeholder="Nhập số điện thoại"
+                            className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${errors.sdt
+                                ? 'border-red-300 focus:ring-red-500'
+                                : 'border-gray-300 focus:ring-blue-500'
+                                }`}
+                        />
+                        {errors.sdt && (
+                            <p className="text-red-500 text-xs">{errors.sdt}</p>
+                        )}
+                    </div>
+
+                    {/* Two column layout for Cap and Phong ban on larger screens */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {/* Cấp */}
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                <Hash className="w-4 h-4 text-gray-500" />
+                                Cấp
+                            </label>
+                            <select
+                                name="cap"
+                                value={formData.cap}
+                                onChange={handleChange}
+                                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                            >
+                                {availableOptions.map(opt => (
+                                    <option key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </option>
+                                ))}
+                            </select>
+
+                        </div>
+
+
+                        {/* Phòng ban */}
+                        <div className="space-y-2">
+                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                                <Building className="w-4 h-4 text-gray-500" />
+                                Phòng ban
+                            </label>
+                            <select
+                                value={formData.PhongBanId ? String(formData.PhongBanId) : "0"}
+                                onChange={(e) =>
+                                    setFormData((prev) => ({
+                                        ...prev,
+                                        PhongBanId: Number(e.target.value) || 0,
+                                    }))
+                                }
+                                className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                            >
+                                <option value="0">-- Chọn phòng ban --</option>
+                                {phong_ban?.map((pb) => (
+                                    <option key={pb.id} value={String(pb.id)}>
+                                        {pb.ten}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="sticky bottom-0 bg-gray-50 px-4 sm:px-6 py-4 rounded-b-xl border-t border-gray-200">
+                    <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+                        <button
+                            type="button"
+                            onClick={() => setShowModal(false)}
+                            className="w-full sm:w-auto px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors text-sm font-medium"
+                        >
+                            Hủy
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleSubmit}
+                            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors text-sm font-medium"
+                        >
+                            {editUser ? "Cập nhật" : "Thêm tài khoản"}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
