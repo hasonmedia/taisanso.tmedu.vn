@@ -14,6 +14,7 @@ const app = express();
 
 // CORS options
 const corsOptions = {
+  // origin: "http://localhost:5173",
   origin: "https://taisanso.tmedu.vn/",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
@@ -51,10 +52,16 @@ const setupCronJobs = () => {
   cron.schedule("0 */4 * * *", async () => {
     try {
       const urgentCheck = await axios.get("/api/admin/tai_san_sap_het_han");
-      const urgentAssets = urgentCheck.data.critical?.assets?.filter(asset => asset.so_ngay_con_lai <= 1) || [];
+      const urgentAssets =
+        urgentCheck.data.critical?.assets?.filter(
+          (asset) => asset.so_ngay_con_lai <= 1
+        ) || [];
       if (urgentAssets.length > 0) {
         const res = await axios.get("/api/admin/gui-mail-tai-san-het-han");
-        console.log(`🚨 Gửi mail khẩn cấp cho ${urgentAssets.length} tài sản:`, res.data);
+        console.log(
+          `🚨 Gửi mail khẩn cấp cho ${urgentAssets.length} tài sản:`,
+          res.data
+        );
       } else {
         console.log("✅ Không có tài sản nào cần thông báo khẩn cấp");
       }

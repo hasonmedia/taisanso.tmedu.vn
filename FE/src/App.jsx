@@ -19,7 +19,7 @@ import AdminLayout from "../src/components/admin/AdminLayout"
 import DashboardAdmin from "./pages/admin/DashboardAdmin";
 import AssetManager from "../src/pages/admin/AssetManager";
 import UserManager from "../src/pages/admin/QuanLyTaiKhoan/TaiKhoan";
-import BrandManager from "../src/pages/admin/BrandManagement";
+import AssetCategoryManagement from "../src/pages/admin/BrandManagement";
 import ApproveRequest from "../src/pages/admin/ApproveRequests";
 import ActivityHistory from "../src/pages/admin/ActivityHistory";
 import ExpiryNotification from "../src/pages/admin/ExpiryNotification";
@@ -122,7 +122,7 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={1}>
             <AdminLayout>
-              <BrandManager />
+              <AssetCategoryManagement />
             </AdminLayout>
           </ProtectedRoute>
         }

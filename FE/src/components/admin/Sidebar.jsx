@@ -16,18 +16,18 @@ import {
 import { useEffect } from "react";
 
 const menuItems = [
-    { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-    { label: "Quản Lý Tài Sản", icon: Package, href: "/dashboard/quan-ly-tai-san" },
-    { label: "Quản Lý Người Dùng", icon: Users, href: "/dashboard/quan-ly-nguoi-dung" },
-    { label: "Quản Lý Danh Mục Tài Sản", icon: Building, href: "/dashboard/quan-ly-danh-muc-tai-san" },
-    { label: "Quản Lý Phòng Ban", icon: Building, href: "/dashboard/quan-ly-phong-ban" },
+    { label: "Trang Chủ", icon: LayoutDashboard, href: "/dashboard" },
+    { label: "Tài Sản", icon: Package, href: "/dashboard/quan-ly-tai-san" },
+    { label: "Người Dùng", icon: Users, href: "/dashboard/quan-ly-nguoi-dung" },
+    { label: "Danh Mục Tài Sản", icon: Building, href: "/dashboard/quan-ly-danh-muc-tai-san" },
+    { label: "Phòng Ban", icon: Building, href: "/dashboard/quan-ly-phong-ban" },
     { label: "Phê Duyệt Yêu Cầu", icon: ClipboardCheck, href: "/dashboard/phe-duyet-yeu-cau" },
     { label: "Lịch Sử Hoạt Động", icon: RotateCcw, href: "/dashboard/lich-su-hoat-dong" },
     { label: "Tài Sản Sắp Hết Hạn", icon: BellPlus, href: "/dashboard/tai-san-sap-het-han" },
     { label: "Thông Báo Hết Hạn", icon: Bell, href: "/dashboard/thong-bao-het-han" },
     { label: "Cấp tài sản trực tiếp", icon: BarChart, href: "/dashboard/cap-tai-san-truc-tiep" },
     { label: "Nhật Ký Cá Nhân", icon: BookUser, href: "/dashboard/nhat-ky-ca-nhan" },
-    { label: "Thông Tin Đăng Nhập Tài Sản", icon: KeyRound, href: "/dashboard/thong-tin-dang-nhap-tai-san" },
+    { label: "Thông Tin Tài Khoản", icon: KeyRound, href: "/dashboard/thong-tin-dang-nhap-tai-san" },
     { label: "Hướng dẫn sử dụng", icon: BookUser, href: "/user-guide" },
 ];
 
