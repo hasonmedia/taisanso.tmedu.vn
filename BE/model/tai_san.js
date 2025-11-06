@@ -1,23 +1,21 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
+const { DataTypes } = require("sequelize");
+const { sequelize } = require("../config/database");
 
-const { DanhMucTaiSan } = require('./danh_muc_tai_san');
+const { DanhMucTaiSan } = require("./danh_muc_tai_san");
+const { NhaCungCap } = require("./nha_cung_cap");
 
 //tai_san
-const TaiSan = sequelize.define('TaiSan', {
+const TaiSan = sequelize.define(
+  "TaiSan",
+  {
     ten_tai_san: {
-        type: DataTypes.STRING(255),
-        allowNull: false
+      type: DataTypes.STRING(255),
+      allowNull: false,
     },
-    ten_nha_cung_cap: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-    },
-
-    //thông tin động
+    // thông tin động
     thong_tin: {
-        type: DataTypes.JSON,
-        allowNull: false
+      type: DataTypes.JSON,
+      allowNull: true,
     },
     tong_so_luong: DataTypes.INTEGER,
     so_luong_con: DataTypes.INTEGER,
@@ -25,19 +23,24 @@ const TaiSan = sequelize.define('TaiSan', {
 
     // thêm 2 trường ngày
     ngay_dang_ky: {
-        type: DataTypes.DATEONLY,
-        allowNull: true
+      type: DataTypes.DATEONLY,
+      allowNull: true,
     },
     ngay_het_han: {
-        type: DataTypes.DATEONLY,
-        allowNull: true
-    }
-}, {
-    tableName: 'tai_san',
-    timestamps: false
-});
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+  },
+  {
+    tableName: "tai_san",
+    timestamps: false,
+  }
+);
 
 TaiSan.belongsTo(DanhMucTaiSan);
 DanhMucTaiSan.hasMany(TaiSan);
+
+TaiSan.belongsTo(NhaCungCap);
+NhaCungCap.hasMany(TaiSan);
 
 module.exports = { TaiSan };

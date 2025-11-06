@@ -40,7 +40,7 @@ function Header() {
                     to="/user"
                     className="text-xl md:text-2xl font-bold text-blue-600"
                 >
-                    TMEDU
+                    Quản lý Tài Sản Số
                 </Link>
             </div>
 

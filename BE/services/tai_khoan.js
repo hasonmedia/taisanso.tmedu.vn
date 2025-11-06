@@ -12,7 +12,7 @@ const findUsers = async (user) => {
   } else if (user.cap === 2) {
     condition = `tk.cap > 2 AND pb.id = ${user.PhongBanId}`;
   } else if (user.cap === 3) {
-    condition = `tk.cap = 3 AND tk.id = ${user.id}`; 
+    condition = `tk.cap = 3 AND tk.id = ${user.id}`;
   }
 
   const sql = `
@@ -23,10 +23,11 @@ const findUsers = async (user) => {
           ttdn.ngay_thu_hoi,
           ttdn.ngay_cap,
           ts.ten_tai_san,
-          ts.ten_nha_cung_cap,
+          ncc.ten AS ten_nha_cung_cap,
           tk.id AS tai_khoan_id
       FROM thong_tin_dang_nhap_tai_san ttdn
       JOIN tai_san ts ON ts.id = ttdn.tai_san_id
+      JOIN nha_cung_cap ncc ON ncc.id = ts.nha_cung_cap_id
       JOIN tai_khoan tk ON tk.id = ttdn.nguoi_nhan_id
     )
     SELECT
@@ -63,7 +64,6 @@ const findUsers = async (user) => {
   return results;
 };
 
-
 module.exports = {
-  findUsers
+  findUsers,
 };

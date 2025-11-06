@@ -3,9 +3,10 @@ import {
   getAllAsset as fetch,
   createAsset,
   updateAsset,
-  deleteAsset, 
+  deleteAsset,
   getAssetByIdCategory,
-  getAssetsExpiringSoon
+  getAssetsExpiringSoon,
+  getAssetsDetailedInfo,
 } from "../apis/asset";
 
 export const AssetStore = create((set) => ({
@@ -22,8 +23,7 @@ export const AssetStore = create((set) => ({
   },
   getAssetByIdCategory: async (id) => {
     try {
-      console.log(id)
-     const response = await getAssetByIdCategory(id);
+      const response = await getAssetByIdCategory(id);
       set({ data: response });
       return response;
     } catch (error) {
@@ -46,9 +46,7 @@ export const AssetStore = create((set) => ({
     try {
       const response = await updateAsset(id, data);
       set((state) => ({
-        data: state.data.map((item) =>
-        (item.id === id ? response : item)
-        )
+        data: state.data.map((item) => (item.id === id ? response : item)),
       }));
 
       return response;
@@ -61,8 +59,8 @@ export const AssetStore = create((set) => ({
     try {
       const response = await deleteAsset(id);
       set((state) => ({
-      data: state.data.filter((item) => item.id !== id),
-    }));
+        data: state.data.filter((item) => item.id !== id),
+      }));
       return response;
     } catch (error) {
       console.log(error);
@@ -72,6 +70,15 @@ export const AssetStore = create((set) => ({
   getAssetsExpiringSoon: async () => {
     try {
       const response = await getAssetsExpiringSoon();
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
+  getAssetsDetailedInfo: async (filters) => {
+    try {
+      const response = await getAssetsDetailedInfo(filters);
       return response;
     } catch (error) {
       console.log(error);

@@ -29,7 +29,7 @@ const getYeuCau = async (user) => {
                     yc.ly_do_tu_choi,
                     ts.id AS tai_san_id,
                     ts.ten_tai_san,
-                    ts.ten_nha_cung_cap,
+                    ncc.ten AS ten_nha_cung_cap,
                     ts.thong_tin AS ghi_chu,
                     tk2.id AS nguoi_yeu_cau_id,
                     tk2.ho_ten AS nguoi_yeu_cau,
@@ -44,6 +44,8 @@ const getYeuCau = async (user) => {
                         yeu_cau yc
                     JOIN 
                         tai_san ts ON yc.tai_san_id = ts.id
+                    JOIN
+                        nha_cung_cap ncc ON ts.nha_cung_cap_id = ncc.id
                     JOIN 
                         danh_muc_tai_san dmts ON ts.danh_muc_tai_san_id = dmts.id
                     LEFT JOIN
@@ -78,20 +80,20 @@ const patchYeuCau = async (id, data, user) => {
     console.log("yeucau", data);
     const yeu_cau = await YeuCau.findByPk(id);
     const nguoi_yeu_cau = await TaiKhoan.findByPk(yeu_cau.nguoi_yeu_cau_id);
-    console.log(nguoi_yeu_cau)
+    console.log(nguoi_yeu_cau);
     yeu_cau.update(data);
     if (data.trang_thai === "đã duyệt") {
       const value1 = {
-            noi_dung: `Yêu cầu của bạn với nội dung ${yeu_cau.noi_dung} đã được phê duyệt`,
-            TaiKhoanId: nguoi_yeu_cau.dataValues.id
-      }
-      console.log(value1)
+        noi_dung: `Yêu cầu của bạn với nội dung ${yeu_cau.noi_dung} đã được phê duyệt`,
+        TaiKhoanId: nguoi_yeu_cau.dataValues.id,
+      };
+      console.log(value1);
       await ThongBao.create(value1);
     } else if (data.trang_thai === "từ chối") {
       const value1 = {
-            noi_dung: `Yêu cầu của bạn với nội dung ${yeu_cau.noi_dung} đã từ chối với lý do ${data.ly_do_tu_choi}`,
-            TaiKhoanId: nguoi_yeu_cau.id
-      }
+        noi_dung: `Yêu cầu của bạn với nội dung ${yeu_cau.noi_dung} đã từ chối với lý do ${data.ly_do_tu_choi}`,
+        TaiKhoanId: nguoi_yeu_cau.id,
+      };
       await ThongBao.create(value1);
     }
     const value = {

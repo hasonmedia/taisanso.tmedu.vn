@@ -58,7 +58,7 @@ function Header() {
                 {/* Left nav */}
                 <div className="flex items-center space-x-4 md:space-x-6">
                     <Link to="/dashboard_manager" className="text-xl md:text-2xl font-bold text-blue-600">
-                        TMEDU
+                        Quản lý Tài Sản Số
                     </Link>
 
                     {/* Desktop Navigation */}

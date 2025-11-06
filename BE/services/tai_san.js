@@ -1,28 +1,37 @@
 const { TaiSan } = require("../model/tai_san");
 const { HanhDong } = require("../model/hanh_dong");
 const { sequelize } = require("../config/database");
-const { ChiTietHanhDong } = require('../model/chi_tiet_hanh_dong');
-const { DanhMucTaiSan } = require('../model/danh_muc_tai_san');
-
+const { ChiTietHanhDong } = require("../model/chi_tiet_hanh_dong");
+const { DanhMucTaiSan } = require("../model/danh_muc_tai_san");
+const { NhaCungCap } = require("../model/nha_cung_cap");
 const getTaiSan = async (data, user) => {
-    let filter = ``;
-    let DanhMucTaiSan1 = null;
-    if (data) {
-        DanhMucTaiSan1 =await DanhMucTaiSan.findByPk(data);
-        filter = filter + `WHERE ts.danh_muc_tai_san_id = ${data}`;
-    }
+  let filter = ``;
+  let DanhMucTaiSan1 = null;
+  if (data) {
+    DanhMucTaiSan1 = await DanhMucTaiSan.findByPk(data);
+    filter = filter + `WHERE ts.danh_muc_tai_san_id = ${data}`;
+  }
   const sql = `SELECT 
                     ts.*,
                     danhMucTaiSan.id AS danh_muc_tai_san_id,
                     danhMucTaiSan.ten AS danh_muc_tai_san_ten,
                     danhMucTaiSan.lien_he AS danh_muc_tai_san_lien_he,
-                    danhMucTaiSan.link AS danh_muc_tai_san_link
+                    danhMucTaiSan.link AS danh_muc_tai_san_link,
+                    ncc.id AS nha_cung_cap_id,
+                    ncc.ten AS ten_nha_cung_cap,
+                    ncc.sodienthoai AS lien_he_nha_cung_cap,
+                    ncc.lienhe AS lien_he,
+                    ncc.website AS website
                 FROM 
                     tai_san AS ts
                 JOIN 
                     danh_muc_tai_san AS danhMucTaiSan ON danhMucTaiSan.id = ts.danh_muc_tai_san_id
+                JOIN
+                    nha_cung_cap AS ncc ON ncc.id = ts.nha_cung_cap_id
                 ${filter};`;
-  const results = await sequelize.query(sql, { type: sequelize.QueryTypes.SELECT });
+  const results = await sequelize.query(sql, {
+    type: sequelize.QueryTypes.SELECT,
+  });
   let moTaHanhDong = "Lấy danh sách tài sản";
   if (data) {
     moTaHanhDong += ` theo danh mục: ${DanhMucTaiSan1.ten}`;
@@ -30,7 +39,7 @@ const getTaiSan = async (data, user) => {
 
   const value = {
     loai_hanh_dong: moTaHanhDong,
-    HanhDongId: user.hanh_dong
+    HanhDongId: user.hanh_dong,
   };
 
   await ChiTietHanhDong.create(value);
@@ -38,57 +47,63 @@ const getTaiSan = async (data, user) => {
 };
 
 const addTaiSan = async (data, user) => {
+  try {
     const newTaiSan = await TaiSan.create(data);
     const value = {
-        loai_hanh_dong: `Thêm tài sản mới có tên là ${data.ten_tai_san} và nhà cung cấp là ${data.ten_nha_cung_cap}`,
-        HanhDongId: user.hanh_dong
-    }
+      loai_hanh_dong: `Thêm tài sản mới có tên là ${data.ten_tai_san} và nhà cung cấp là ${data.ten_nha_cung_cap}`,
+      HanhDongId: user.hanh_dong,
+    };
     await ChiTietHanhDong.create(value);
     return newTaiSan;
-}
+  } catch (error) {
+    console.log("Lỗi khi thêm tài sản:", error);
+  }
+};
 const updateTaiSan = async (id, data, user) => {
-    const taiSan = await TaiSan.findByPk(id);
-    if (!taiSan) {
-        return new Error("Tài sản không tồn tại");
-    }
-    await taiSan.update(data);
-    const value = {
-            loai_hanh_dong: `Cập nhật tài sản có tên là ${data.ten_tai_san} và nhà cung cấp là ${data.ten_nha_cung_cap}`,
-           HanhDongId: user.hanh_dong
-    }
-    await ChiTietHanhDong.create(value);
-    return taiSan;
-}
+  const taiSan = await TaiSan.findByPk(id);
+  if (!taiSan) {
+    return new Error("Tài sản không tồn tại");
+  }
+  await taiSan.update(data);
+  const value = {
+    loai_hanh_dong: `Cập nhật tài sản có tên là ${data.ten_tai_san} và nhà cung cấp là ${data.ten_nha_cung_cap}`,
+    HanhDongId: user.hanh_dong,
+  };
+  await ChiTietHanhDong.create(value);
+  return taiSan;
+};
 const deleteTaiSan = async (id, user) => {
-    const taiSan = await TaiSan.findByPk(id);
-    const ten_tai_san = taiSan.ten_tai_san;
-    if (!taiSan) {
-        return new Error("Tài sản không tồn tại");
-    }
-    await taiSan.destroy();
-    const value = {
-            loai_hanh_dong: `Xóa tài sản ${ten_tai_san}`,
-            HanhDongId: user.hanh_dong
-    }
-    await ChiTietHanhDong.create(value);
-    return { message: "Tài sản đã được xóa thành công" };
-}
+  const taiSan = await TaiSan.findByPk(id);
+  const ten_tai_san = taiSan.ten_tai_san;
+  if (!taiSan) {
+    return new Error("Tài sản không tồn tại");
+  }
+  await taiSan.destroy();
+  const value = {
+    loai_hanh_dong: `Xóa tài sản ${ten_tai_san}`,
+    HanhDongId: user.hanh_dong,
+  };
+  await ChiTietHanhDong.create(value);
+  return { message: "Tài sản đã được xóa thành công" };
+};
 
 const getTaiSanSapHetHan = async (user) => {
-    const today = new Date();
-    const tenDaysFromNow = new Date(today);
-    tenDaysFromNow.setDate(today.getDate() + 10);
+  const today = new Date();
+  const tenDaysFromNow = new Date(today);
+  tenDaysFromNow.setDate(today.getDate() + 10);
 
-    const sql = `SELECT 
+  const sql = `SELECT 
                     ts.*,
                     danhMucTaiSan.id AS danh_muc_tai_san_id,
                     danhMucTaiSan.ten AS danh_muc_tai_san_ten,
                     danhMucTaiSan.lien_he AS danh_muc_tai_san_lien_he,
                     danhMucTaiSan.link AS danh_muc_tai_san_link,
-                    CASE 
+                    CASE
+                        WHEN (ts.ngay_het_han - CURRENT_DATE) < 0 THEN 'expired'
                         WHEN (ts.ngay_het_han - CURRENT_DATE) <= 3 THEN 'critical'
                         WHEN (ts.ngay_het_han - CURRENT_DATE) <= 7 THEN 'warning'
                         WHEN (ts.ngay_het_han - CURRENT_DATE) <= 10 THEN 'notice'
+                        WHEN (ts.ngay_het_han - CURRENT_DATE) <= 30 THEN 'upcoming'
                         ELSE 'normal'
                     END AS muc_do_canh_bao,
                     (ts.ngay_het_han - CURRENT_DATE) AS so_ngay_con_lai
@@ -98,45 +113,151 @@ const getTaiSanSapHetHan = async (user) => {
                     danh_muc_tai_san AS danhMucTaiSan 
                     ON danhMucTaiSan.id = ts.danh_muc_tai_san_id
                 WHERE 
-                    ts.ngay_het_han IS NOT NULL 
-                    AND ts.ngay_het_han BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL '10 days')
+                    ts.ngay_het_han IS NOT NULL
+                    AND ts.ngay_het_han <= (CURRENT_DATE + INTERVAL '30 days')
                 ORDER BY 
                     ts.ngay_het_han ASC;
 `;
 
-    const results = await sequelize.query(sql, { type: sequelize.QueryTypes.SELECT });
+  const results = await sequelize.query(sql, {
+    type: sequelize.QueryTypes.SELECT,
+  });
+  const expiredAssets = results.filter((asset) => asset.so_ngay_con_lai < 0);
+  // Phân loại theo mức độ cảnh báo
+  const criticalAssets = results.filter((asset) => asset.so_ngay_con_lai <= 3);
+  const warningAssets = results.filter(
+    (asset) => asset.so_ngay_con_lai > 3 && asset.so_ngay_con_lai <= 7
+  );
+  const noticeAssets = results.filter(
+    (asset) => asset.so_ngay_con_lai > 7 && asset.so_ngay_con_lai <= 10
+  );
+  const upcomingAssets = results.filter(
+    (asset) => asset.so_ngay_con_lai > 10 && asset.so_ngay_con_lai <= 30
+  );
+  // Ghi log hành động
+  const value = {
+    loai_hanh_dong: `Kiểm tra tài sản sắp hết hạn - Tìm thấy ${results.length} tài sản cần chú ý`,
+    HanhDongId: user.hanh_dong,
+  };
+  await ChiTietHanhDong.create(value);
 
-    // Phân loại theo mức độ cảnh báo
-    const criticalAssets = results.filter(asset => asset.so_ngay_con_lai <= 3);
-    const warningAssets = results.filter(asset => asset.so_ngay_con_lai > 3 && asset.so_ngay_con_lai <= 7);
-    const noticeAssets = results.filter(asset => asset.so_ngay_con_lai > 7 && asset.so_ngay_con_lai <= 10);
+  return {
+    total: results.length,
+    expired: {
+      count: expiredAssets.length,
+      message: "Tài sản đã hết hạn",
+      assets: expiredAssets,
+    },
+    critical: {
+      count: criticalAssets.length,
+      message: "Tài sản hết hạn trong 3 ngày hoặc ít hơn",
+      assets: criticalAssets,
+    },
+    warning: {
+      count: warningAssets.length,
+      message: "Tài sản hết hạn trong 4-7 ngày",
+      assets: warningAssets,
+    },
+    notice: {
+      count: noticeAssets.length,
+      message: "Tài sản hết hạn trong 8-10 ngày",
+      assets: noticeAssets,
+    },
+    upcoming: {
+      count: upcomingAssets.length,
+      message: "Tài sản hết hạn trong 11-30 ngày",
+      assets: upcomingAssets,
+    },
+    all_assets: results,
+  };
+};
+const getTaiSanDetailsService = async (nhaCungCapIds = []) => {
+  let subQueryWhere = `"ts_sub"."danh_muc_tai_san_id" = "DanhMucTaiSan"."id"`;
+  const replacements = {};
+  const isFiltering = nhaCungCapIds.length > 0;
+  if (isFiltering) {
+    subQueryWhere += ` AND "ts_sub"."nha_cung_cap_id" IN (:nhaCungCapIds)`;
+    replacements.nhaCungCapIds = nhaCungCapIds;
+  }
 
-    // Ghi log hành động
-    const value = {
-        loai_hanh_dong: `Kiểm tra tài sản sắp hết hạn - Tìm thấy ${results.length} tài sản cần chú ý`,
-        HanhDongId: user.hanh_dong
-    };
-    await ChiTietHanhDong.create(value);
+  const hetHanSubQuery = `(
+    SELECT COUNT(*)
+    FROM "tai_san" AS "ts_sub"
+    WHERE ${subQueryWhere}
+    AND "ts_sub"."ngay_het_han" < CURRENT_DATE
+  )`;
 
-    return {
-        total: results.length,
-        critical: {
-            count: criticalAssets.length,
-            message: "Tài sản hết hạn trong 3 ngày hoặc ít hơn",
-            assets: criticalAssets
-        },
-        warning: {
-            count: warningAssets.length,
-            message: "Tài sản hết hạn trong 4-7 ngày",
-            assets: warningAssets
-        },
-        notice: {
-            count: noticeAssets.length,
-            message: "Tài sản hết hạn trong 8-10 ngày",
-            assets: noticeAssets
-        },
-        all_assets: results
-    };
-}
+  const sapHetHanSubQuery = `(
+    SELECT COUNT(*)
+    FROM "tai_san" AS "ts_sub"
+    WHERE ${subQueryWhere}
+    AND "ts_sub"."ngay_het_han" >= CURRENT_DATE
+    AND ("ts_sub"."ngay_het_han"::date - CURRENT_DATE::date) <= 30
+  )`;
 
-module.exports = { getTaiSan, addTaiSan, updateTaiSan, deleteTaiSan, getTaiSanSapHetHan };
+  const taiSanIncludeOptions = {
+    model: TaiSan,
+    as: "TaiSans",
+    attributes: [
+      "id",
+      "ten_tai_san",
+      "thong_tin",
+      "ngay_dang_ky",
+      "ngay_het_han",
+      [
+        sequelize.literal(
+          `("TaiSans"."ngay_het_han"::date - CURRENT_DATE::date)`
+        ),
+        "so_ngay_con_lai",
+      ],
+      [
+        sequelize.literal(`
+        (CASE
+          WHEN "TaiSans"."ngay_het_han" < CURRENT_DATE THEN 'expired'
+          WHEN ("TaiSans"."ngay_het_han"::date - CURRENT_DATE::date) <= 3 THEN 'critical'
+          WHEN ("TaiSans"."ngay_het_han"::date - CURRENT_DATE::date) <= 7 THEN 'warning'
+          WHEN ("TaiSans"."ngay_het_han"::date - CURRENT_DATE::date) <= 10 THEN 'notice'
+          WHEN ("TaiSans"."ngay_het_han"::date - CURRENT_DATE::date) <= 30 THEN 'upcoming'
+          ELSE 'safe'
+        END)`),
+        "muc_do_canh_bao",
+      ],
+    ],
+    include: {
+      model: NhaCungCap,
+      attributes: ["id", "ten"],
+      required: true,
+      ...(isFiltering && { where: { id: nhaCungCapIds } }),
+    },
+    required: true,
+  };
+
+  try {
+    const results = await DanhMucTaiSan.findAll({
+      attributes: [
+        "id",
+        "ten",
+        [sequelize.literal(hetHanSubQuery), "so_luong_het_han"],
+        [sequelize.literal(sapHetHanSubQuery), "so_luong_sap_het_han"],
+      ],
+      include: [taiSanIncludeOptions],
+      order: [["ten", "ASC"]],
+      distinct: true,
+      replacements,
+    });
+
+    return results.filter((dm) => dm.TaiSans && dm.TaiSans.length > 0);
+  } catch (error) {
+    console.error("Lỗi khi lấy tài sản theo nhóm (có đếm):", error);
+    throw error;
+  }
+};
+
+module.exports = {
+  getTaiSan,
+  addTaiSan,
+  updateTaiSan,
+  deleteTaiSan,
+  getTaiSanSapHetHan,
+  getTaiSanDetailsService,
+};

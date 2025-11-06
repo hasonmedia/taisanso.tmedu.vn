@@ -5,11 +5,11 @@ export const getAllAsset = async (filters = {}) => {
   return axiosConfig({
     method: "get",
     url: "/admin/tai_san",
-    params: filters, 
+    params: filters,
   });
 };
 
-//  // xem lai 
+//  // xem lai
 export const getAssetByIdCategory = async (id) => {
   return axiosConfig({
     method: "get",
@@ -44,5 +44,15 @@ export const getAssetsExpiringSoon = async () => {
   return axiosConfig({
     method: "get",
     url: "/admin/tai_san_sap_het_han",
+  });
+};
+
+export const getAssetsDetailedInfo = async (filters = []) => {
+  return axiosConfig({
+    method: "get",
+    url: "/admin/tai_san/details",
+    params: {
+      "nhaCungCapIds[]": filters,
+    },
   });
 };

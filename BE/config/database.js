@@ -13,7 +13,7 @@ const sequelize = new Sequelize(
   process.env.PG_PASSWORD,
   {
     host: process.env.PG_HOST,
-    port: 5433,
+    port: 5432,
     dialect: "postgres",
     timezone: "+07:00",
     define: {

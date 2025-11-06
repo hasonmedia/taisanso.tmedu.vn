@@ -1,20 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { AssetStore } from "../stores/asset";
-
+import { SupplierStore } from "../stores/supplier";
 export default function AssetModal({ dataCategory, setIsModalOpen }) {
   const asset = AssetStore();
-
+  const nhacungcap = SupplierStore();
   const [supplierSource, setSupplierSource] = useState("facebook");
   const [supplierType, setSupplierType] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
-
+  const { data: nhacungcaps, getSuppliers } = nhacungcap;
+  const [supplierSelected, setSupplierSelected] = useState("");
+  const [dataSuppliers, setDataSuppliers] = useState([]);
   const [customFields, setCustomFields] = useState([
     { key: "Màu sắc", value: "Đỏ" },
     { key: "Kích thước", value: "L" },
   ]);
-
-  // Thêm state cho ngày đăng ký và ngày hết hạn
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      const suppliers = await getSuppliers();
+      setDataSuppliers(suppliers);
+    };
+    fetchSuppliers();
+  }, [getSuppliers]);
   const [ngayDangKy, setNgayDangKy] = useState("");
   const [ngayHetHan, setNgayHetHan] = useState("");
 
@@ -35,29 +42,25 @@ export default function AssetModal({ dataCategory, setIsModalOpen }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const supplierName = e.target.supplier?.value.trim();
-    let supplierValue = supplierName;
-    if (selectedCategory?.ten?.toLowerCase() === "social") {
-      supplierValue = supplierName
-        ? `${supplierSource} - ${supplierType} - ${supplierName}`
-        : `${supplierSource} - ${supplierType}`;
-    }
-
     const customData = {};
     customFields.forEach(({ key, value }) => {
-      if (key.trim()) {
-        customData[key] = value;
-      }
+      if (key.trim()) customData[key] = value;
     });
+
+    let finalSupplier = supplierSelected;
+
+    if (selectedCategory?.ten?.toLowerCase().trim() === "social") {
+      const supplierName = e.target.supplier?.value.trim() || "";
+      finalSupplier = `${supplierSource} - ${supplierType} - ${supplierName}`;
+    }
 
     const payload = {
       ten_tai_san: e.target.name.value,
-      ten_nha_cung_cap: supplierValue,
+      NhaCungCapId: finalSupplier,
       thong_tin: customData,
-      tong_so_luong: 1, // mặc định
+      tong_so_luong: 1,
       DanhMucTaiSanId: e.target.category.value,
-      so_luong_con: 1, // mặc định
+      so_luong_con: 1,
       ngay_dang_ky: ngayDangKy,
       ngay_het_han: ngayHetHan,
     };
@@ -149,8 +152,7 @@ export default function AssetModal({ dataCategory, setIsModalOpen }) {
             <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
               Nhà cung cấp:
             </label>
-
-            {selectedCategory?.ten?.toLowerCase() === "social" ? (
+            {selectedCategory?.ten?.toLowerCase().trim() === "social" ? (
               <>
                 {/* Chọn nguồn */}
                 <select
@@ -208,13 +210,21 @@ export default function AssetModal({ dataCategory, setIsModalOpen }) {
                 />
               </>
             ) : (
-              <input
+              <select
                 name="supplier"
-                type="text"
-                placeholder="Nhập tên nhà cung cấp"
+                value={supplierSelected}
+                onChange={(e) => setSupplierSelected(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 
              text-sm sm:text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-              />
+              >
+                <option value="">-- Chọn nhà cung cấp --</option>
+                {dataSuppliers && dataSuppliers.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.ten}
+                  </option>
+                ))}
+              </select>
+
             )}
           </div>
 

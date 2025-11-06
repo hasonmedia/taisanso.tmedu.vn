@@ -9,17 +9,17 @@ const adminRouter = require("./router/admin");
 const { connectToDB } = require("./config/database.js");
 const cron = require("node-cron");
 const axios = require("axios");
-
+const swaggerDocs = require("./config/swagger");
 const app = express();
 
 // CORS options
 const corsOptions = {
-  // origin: "http://localhost:5173",
-  origin: "https://taisanso.tmedu.vn/",
+  origin: "http://localhost:5173",
+  // origin: "https://taisanso.work999.com/",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
 };
-
+swaggerDocs(app);
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(bodyParser.json());
