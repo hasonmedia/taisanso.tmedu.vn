@@ -15,7 +15,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:3001",
+        url: "http://taisanso_backend:3001/",
         description: "Development Server",
       },
     ],
@@ -249,9 +249,6 @@ const swaggerDocs = (app) => {
     res.setHeader("Content-Type", "application/json");
     res.send(swaggerSpec);
   });
-
-  console.log("🚀 Swagger UI is running at: http://localhost:3001/api-docs");
-  console.log("📋 Swagger JSON spec: http://localhost:3001/api-docs.json");
 };
 
 module.exports = swaggerDocs;
