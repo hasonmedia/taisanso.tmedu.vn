@@ -1,0 +1,38 @@
+const { Sequelize } = require("sequelize");
+const dotenv = require("dotenv");
+dotenv.config();
+console.log(
+  process.env.PG_HOST,
+  process.env.PG_USER,
+  process.env.PG_PASSWORD,
+  process.env.PG_DATABASE
+);
+const sequelize = new Sequelize(
+  process.env.PG_DATABASE,
+  process.env.PG_USER,
+  process.env.PG_PASSWORD,
+  {
+    host: process.env.PG_HOST,
+    port: 5433,
+    dialect: "postgres",
+    timezone: "+07:00",
+    define: {
+      timestamps: false,
+      underscored: true,
+    },
+    logging: false,
+  }
+);
+
+sequelize.sync({ alter: true });
+
+const connectToDB = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("Kết nối thành công DATABASE");
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports = { sequelize, connectToDB };
