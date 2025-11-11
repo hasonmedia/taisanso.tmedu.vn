@@ -286,7 +286,7 @@ const getTaiSanDetailsService = async (nhaCungCapIds = []) => {
         required: false,
       },
     ],
-    required: true,
+    required: false,
   };
 
   try {
@@ -303,7 +303,7 @@ const getTaiSanDetailsService = async (nhaCungCapIds = []) => {
       replacements,
     });
 
-    return results.filter((dm) => dm.TaiSans && dm.TaiSans.length > 0);
+    return results;
   } catch (error) {
     console.error("Lỗi khi lấy tài sản theo nhóm (có đếm):", error);
     throw error;
