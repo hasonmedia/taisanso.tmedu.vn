@@ -1,16 +1,21 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
-
-const DanhMucTaiSan = sequelize.define('DanhMucTaiSan', {
+const { DataTypes } = require("sequelize");
+const { sequelize } = require("../config/database");
+const { LoaiTaiSan } = require("./loai_tai_san");
+const DanhMucTaiSan = sequelize.define(
+  "DanhMucTaiSan",
+  {
+    // 'id' sẽ được Sequelize tự động thêm làm khóa chính
     ten: {
-        type: DataTypes.STRING(255),
-        allowNull: false
+      type: DataTypes.STRING(255),
+      allowNull: false,
     },
-    lien_he: DataTypes.STRING(255),
-    link: DataTypes.TEXT
-}, {
-    tableName: 'danh_muc_tai_san',
-    timestamps: false
-});
-
+    ghi_chu: DataTypes.TEXT,
+  },
+  {
+    tableName: "danh_muc_tai_san",
+    timestamps: false,
+  }
+);
+DanhMucTaiSan.hasMany(LoaiTaiSan, { foreignKey: "DanhMucTaiSanId" });
+LoaiTaiSan.belongsTo(DanhMucTaiSan, { foreignKey: "DanhMucTaiSanId" });
 module.exports = { DanhMucTaiSan };

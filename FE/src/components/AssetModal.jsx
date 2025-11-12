@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { AssetStore } from "../stores/asset";
 import { SupplierStore } from "../stores/supplier";
+import { ThuongHieuStore } from "../stores/thuonghieu";
 import LoaiTaiSanSelect from "./LoaiTaiSanSelect";
 import SupplierSelect from "./SupplierSelect";
 import AssetCategorySelectNew from "./AssetCategorySelectNew";
-export default function AssetModal({ dataCategory, setIsModalOpen }) {
+export default function AssetModal({ setIsModalOpen }) {
   const { data: asset, createAsset } = AssetStore();
+  const { data: dataCategory } = ThuongHieuStore();
   const nhacungcap = SupplierStore();
   const [supplierSource, setSupplierSource] = useState("facebook");
   const [supplierType, setSupplierType] = useState("");
@@ -123,83 +125,15 @@ export default function AssetModal({ dataCategory, setIsModalOpen }) {
               value={categorySelected}
               onValueChange={(value) => {
                 setCategorySelected(String(value));
-                const cat = dataCategory.find((c) => String(c.id) === String(value));
+                const cat = dataCategory?.find((c) => String(c.id) === String(value));
                 setSelectedCategory(cat || null);
+                // Reset loại tài sản khi danh mục thay đổi
+                setLoaiTaiSanSelected("");
               }}
               placeholder="Chọn danh mục tài sản"
             />
           </div>
-          {/* Nhà cung cấp */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-              Nhà cung cấp:
-            </label>
-            {selectedCategory?.ten?.toLowerCase().trim() === "social" ? (
-              <>
-                {/* Chọn nguồn */}
-                <select
-                  value={supplierSource}
-                  onChange={(e) => {
-                    setSupplierSource(e.target.value);
-                    setSupplierType("");
-                  }}
-                  className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 mb-2
-               text-sm sm:text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                >
-                  <option value="facebook">Facebook</option>
-                  <option value="zalo">Zalo</option>
-                  <option value="threads">Threads</option>
-                </select>
 
-                {/* Nếu social thì hiển thị loại */}
-                {supplierSource && (
-                  <select
-                    value={supplierType}
-                    onChange={(e) => setSupplierType(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 mb-2
-                 text-sm sm:text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                  >
-                    <option value="" disabled>
-                      Chọn loại
-                    </option>
-                    {supplierSource === "facebook" && (
-                      <>
-                        <option value="Fanpage">Fanpage</option>
-                        <option value="Group">Group</option>
-                        <option value="Nick">Tài khoản cá nhân</option>
-                      </>
-                    )}
-                    {supplierSource === "zalo" && (
-                      <>
-                        <option value="ZaloOA">ZaloOA</option>
-                        <option value="Group">Group</option>
-                        <option value="Nick">Tài khoản cá nhân</option>
-                      </>
-                    )}
-                    {supplierSource === "threads" && (
-                      <option value="Profile">Profile</option>
-                    )}
-                  </select>
-                )}
-
-                {/* Input tên nhà cung cấp */}
-                <input
-                  name="supplier"
-                  type="text"
-                  placeholder="Nhập tên nhà cung cấp"
-                  className="w-full border border-gray-300 rounded-lg p-2 sm:p-3 
-               text-sm sm:text-base focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
-                />
-              </>
-            ) : (
-              <SupplierSelect
-                value={supplierSelected}
-                onValueChange={setSupplierSelected}
-                placeholder="Chọn nhà cung cấp"
-                danhMucId={categorySelected}
-              />
-            )}
-          </div>
           {/* Loại tài sản */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
@@ -208,10 +142,22 @@ export default function AssetModal({ dataCategory, setIsModalOpen }) {
             <LoaiTaiSanSelect
               value={loaiTaiSanSelected}
               onValueChange={setLoaiTaiSanSelected}
-              placeholder="Chọn loại tài sản"
+              placeholder={categorySelected ? "Chọn loại tài sản" : "Vui lòng chọn danh mục trước"}
+              categoryId={categorySelected}
             />
           </div>
-
+          {/* Nhà cung cấp */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+              Nhà cung cấp:
+            </label>
+            <SupplierSelect
+              value={supplierSelected}
+              onValueChange={setSupplierSelected}
+              placeholder="Chọn nhà cung cấp"
+              danhMucId={categorySelected}
+            />
+          </div>
           {/* Ngày đăng ký và ngày hết hạn */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>

@@ -1,46 +1,52 @@
 const { LoaiTaiSan } = require("../model/loai_tai_san");
 const { TaiSan } = require("../model/tai_san");
 const { NhaCungCap } = require("../model/nha_cung_cap");
+const { DanhMucTaiSan } = require("../model/danh_muc_tai_san");
 const { Op } = require("sequelize");
-
 const getLoaiTaiSanService = async ({
   page = 1,
   limit = 10,
   search,
-  nhaCungCapId,
+  danhMucTaiSanId,
 }) => {
   try {
     const offset = (page - 1) * limit;
-    const whereClause = {};
 
+    const whereClause = {};
     if (search) {
       whereClause.ten = {
         [Op.iLike]: `%${search}%`,
       };
     }
-
-    if (nhaCungCapId) {
-      whereClause.NhaCungCapId = nhaCungCapId;
+    if (danhMucTaiSanId) {
+      whereClause.DanhMucTaiSanId = danhMucTaiSanId; // <-- Sử dụng tên đúng
     }
 
+    // 3. Lấy dữ liệu và đếm
     const { count, rows } = await LoaiTaiSan.findAndCountAll({
-      where: whereClause,
+      where: whereClause, // whereClause đã chứa bộ lọc danhMucTaiSanId
       include: [
         {
-          model: NhaCungCap,
-          attributes: ["id", "ten", "website", "lienhe", "sodienthoai"],
+          // Vẫn include để lấy thông tin
+          model: DanhMucTaiSan,
+          attributes: ["id", "ten", "ghi_chu"],
+        },
+        {
+          // Vẫn include để lấy danh sách TaiSan lồng nhau
+          model: TaiSan,
+          attributes: [
+            "id",
+            "ten_tai_san",
+            "thong_tin",
+            "tong_so_luong",
+            "so_luong_con",
+            "ngay_dang_ky",
+            "ngay_het_han",
+          ],
           include: [
             {
-              model: TaiSan,
-              attributes: [
-                "id",
-                "ten_tai_san",
-                "thong_tin",
-                "tong_so_luong",
-                "so_luong_con",
-                "ngay_dang_ky",
-                "ngay_het_han",
-              ],
+              model: NhaCungCap,
+              attributes: ["id", "ten", "website", "lienhe", "sodienthoai"],
             },
           ],
         },
@@ -48,43 +54,15 @@ const getLoaiTaiSanService = async ({
       limit: parseInt(limit),
       offset: parseInt(offset),
       order: [["ten", "ASC"]],
+      distinct: true,
     });
-    const groupedData = rows.reduce((acc, item) => {
-      const nhaCungCaps = item.dataValues.NhaCungCap
-        ? [
-            {
-              id: item.dataValues.NhaCungCap.id,
-              ten: item.dataValues.NhaCungCap.ten,
-              website: item.dataValues.NhaCungCap.website,
-              taiSans: item.dataValues.NhaCungCap.TaiSans || [],
-            },
-          ]
-        : [];
-
-      const existing = acc.find((i) => i.ten === item.ten);
-
-      if (existing) {
-        nhaCungCaps.forEach((ncc) => {
-          if (!existing.nhaCungCaps.some((e) => e.id === ncc.id)) {
-            existing.nhaCungCaps.push(ncc);
-          }
-        });
-      } else {
-        acc.push({
-          ten: item.ten,
-          id: item.id,
-          nhaCungCaps,
-        });
-      }
-
-      return acc;
-    }, []);
 
     const totalPages = Math.ceil(count / limit);
 
+    // 4. Trả về kết quả
     return {
       success: true,
-      data: groupedData,
+      data: rows,
       pagination: {
         current_page: parseInt(page),
         total_pages: totalPages,
@@ -98,25 +76,24 @@ const getLoaiTaiSanService = async ({
   }
 };
 
-const addLoaiTaiSanService = async ({ ten, nhaCungCapId }) => {
+const addLoaiTaiSanService = async ({ ten, danhMucTaiSanId }) => {
   try {
-    // Kiểm tra nhà cung cấp có tồn tại không
-    const nhaCungCap = await NhaCungCap.findByPk(nhaCungCapId);
-    if (!nhaCungCap) {
-      throw new Error("Nhà cung cấp không tồn tại");
+    const danh_muc_tai_san = await DanhMucTaiSan.findByPk(danhMucTaiSanId);
+    if (!danh_muc_tai_san) {
+      throw new Error("Danh mục tài sản không tồn tại");
     }
 
     const loaiTaiSan = await LoaiTaiSan.create({
       ten: ten.trim(),
-      NhaCungCapId: nhaCungCapId,
+      DanhMucTaiSanId: danhMucTaiSanId,
     });
 
-    // Trả về kèm thông tin nhà cung cấp
+    // Trả về kèm thông tin danh mục tài sản
     return await LoaiTaiSan.findByPk(loaiTaiSan.id, {
       include: [
         {
-          model: NhaCungCap,
-          attributes: ["id", "ten", "website"],
+          model: DanhMucTaiSan,
+          attributes: ["id", "ten", "ghi_chu"],
         },
       ],
     });
@@ -127,7 +104,7 @@ const addLoaiTaiSanService = async ({ ten, nhaCungCapId }) => {
 };
 
 // Cập nhật loại tài sản
-const updateLoaiTaiSanService = async (id, { ten, nhaCungCapId }) => {
+const updateLoaiTaiSanService = async (id, { ten, danhMucTaiSanId }) => {
   try {
     const loaiTaiSan = await LoaiTaiSan.findByPk(id);
     if (!loaiTaiSan) {
@@ -136,23 +113,23 @@ const updateLoaiTaiSanService = async (id, { ten, nhaCungCapId }) => {
 
     const updateData = { ten: ten.trim() };
 
-    // Nếu có cập nhật nhà cung cấp, kiểm tra tồn tại
-    if (nhaCungCapId) {
-      const nhaCungCap = await NhaCungCap.findByPk(nhaCungCapId);
-      if (!nhaCungCap) {
-        throw new Error("Nhà cung cấp không tồn tại");
+    // Nếu có cập nhật danh mục tài sản, kiểm tra tồn tại
+    if (danhMucTaiSanId) {
+      const danhmucts = await DanhMucTaiSan.findByPk(danhMucTaiSanId);
+      if (!danhmucts) {
+        throw new Error("Danh mục tài sản không tồn tại");
       }
-      updateData.NhaCungCapId = nhaCungCapId;
+      updateData.DanhMucTaiSanId = danhMucTaiSanId;
     }
 
     await loaiTaiSan.update(updateData);
 
-    // Trả về kèm thông tin nhà cung cấp
+    // Trả về kèm thông tin danh mục tài sản
     return await LoaiTaiSan.findByPk(id, {
       include: [
         {
-          model: NhaCungCap,
-          attributes: ["id", "ten", "website"],
+          model: DanhMucTaiSan,
+          attributes: ["id", "ten", "ghi_chu"],
         },
       ],
     });

@@ -3,7 +3,7 @@ name: Build and Deploy FE
 on:
   push:
     branches:
-      - v2 # chỉ chạy khi push lên nhánh main
+      - main # chỉ chạy khi push lên nhánh main
 permissions:
   contents: write
 

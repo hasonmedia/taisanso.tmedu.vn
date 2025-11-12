@@ -4,7 +4,6 @@ const { sequelize } = require("../config/database");
 const { DanhMucTaiSan } = require("./danh_muc_tai_san");
 const { NhaCungCap } = require("./nha_cung_cap");
 const { LoaiTaiSan } = require("./loai_tai_san");
-//tai_san
 const TaiSan = sequelize.define(
   "TaiSan",
   {
@@ -12,7 +11,6 @@ const TaiSan = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    // thông tin động
     thong_tin: {
       type: DataTypes.JSON,
       allowNull: true,
@@ -20,8 +18,6 @@ const TaiSan = sequelize.define(
     tong_so_luong: DataTypes.INTEGER,
     so_luong_con: DataTypes.INTEGER,
     type: DataTypes.BOOLEAN,
-
-    // thêm 2 trường ngày
     ngay_dang_ky: {
       type: DataTypes.DATEONLY,
       allowNull: true,
@@ -30,6 +26,35 @@ const TaiSan = sequelize.define(
       type: DataTypes.DATEONLY,
       allowNull: true,
     },
+
+    LoaiTaiSanId: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // <-- Cho phép NULL
+      references: {
+        model: "loai_tai_san",
+        key: "id",
+      },
+    },
+
+    // Quan hệ với NhaCungCap (có thể null)
+    NhaCungCapId: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // <-- Cho phép NULL (bạn có thể đổi thành false nếu muốn)
+      references: {
+        model: "nha_cung_cap",
+        key: "id",
+      },
+    },
+
+    // Quan hệ với DanhMucTaiSan (có thể null)
+    DanhMucTaiSanId: {
+      type: DataTypes.INTEGER,
+      allowNull: true, // <-- Cho phép NULL (bạn có thể đổi thành false nếu muốn)
+      references: {
+        model: "danh_muc_tai_san",
+        key: "id",
+      },
+    },
   },
   {
     tableName: "tai_san",
@@ -37,13 +62,14 @@ const TaiSan = sequelize.define(
   }
 );
 
-TaiSan.belongsTo(DanhMucTaiSan);
-DanhMucTaiSan.hasMany(TaiSan);
+NhaCungCap.hasMany(TaiSan, { foreignKey: "NhaCungCapId" });
+TaiSan.belongsTo(NhaCungCap, { foreignKey: "NhaCungCapId" });
 
-TaiSan.belongsTo(NhaCungCap);
-NhaCungCap.hasMany(TaiSan);
+// Quan hệ còn lại của TaiSan
+LoaiTaiSan.hasMany(TaiSan, { foreignKey: "LoaiTaiSanId" });
+TaiSan.belongsTo(LoaiTaiSan, { foreignKey: "LoaiTaiSanId" });
 
-TaiSan.belongsTo(LoaiTaiSan);
-LoaiTaiSan.hasMany(TaiSan);
+DanhMucTaiSan.hasMany(TaiSan, { foreignKey: "DanhMucTaiSanId" });
+TaiSan.belongsTo(DanhMucTaiSan, { foreignKey: "DanhMucTaiSanId" });
 
 module.exports = { TaiSan };

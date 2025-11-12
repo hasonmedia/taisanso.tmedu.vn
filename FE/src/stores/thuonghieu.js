@@ -1,8 +1,13 @@
-import { getAllThuongHieu as getTH, updateThuongHieu as updateTH, createThuongHieu as createTH, deleteThuongHieu as DelTH } from "../apis/thuonghieu";
+import {
+  getAllThuongHieu as getTH,
+  updateThuongHieu as updateTH,
+  createThuongHieu as createTH,
+  deleteThuongHieu as DelTH,
+} from "../apis/thuonghieu";
 import { create } from "zustand";
 
 export const ThuongHieuStore = create((set) => ({
-  data: [],       // lưu danh sách thương hiệu
+  data: [], // lưu danh sách thương hiệu
   loading: false,
 
   getAllThuongHieu: async () => {
@@ -14,14 +19,17 @@ export const ThuongHieuStore = create((set) => ({
       console.log(error);
     }
   },
-
   createThuongHieu: async (data) => {
     try {
       const response = await createTH(data);
-      set((state)=>({data: [...state.data, response.data]}))
+      if (response.success === false) {
+        throw new Error(response.message);
+      }
+      set((state) => ({ data: [...state.data, response.data] }));
       return response.data;
     } catch (error) {
       console.log(error.message);
+      throw error;
     }
   },
 
@@ -29,7 +37,7 @@ export const ThuongHieuStore = create((set) => ({
     try {
       const response = await updateTH(id, data);
       set((state) => ({
-        data: state.data.map((item) => (item.id === id ? response.data : item))
+        data: state.data.map((item) => (item.id === id ? response.data : item)),
       }));
       return response.data;
     } catch (error) {
@@ -41,8 +49,8 @@ export const ThuongHieuStore = create((set) => ({
     try {
       const response = await DelTH(id);
       set((state) => ({
-      data: state.data.filter((item) => item.id !== id),
-    }));
+        data: state.data.filter((item) => item.id !== id),
+      }));
       return response.data;
     } catch (error) {
       console.log(error.message);

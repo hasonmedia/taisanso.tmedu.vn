@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SupplierStore } from "../../stores/supplier";
 import { AssetStore } from "../../stores/asset";
-
+import { Textarea } from "@/components/ui/textarea";
 export default function SupplierManagement() {
     const { data: suppliers, getSuppliers, themNhaCungCap, suaNhaCungCap, xoaNhaCungCap } = SupplierStore();
     const { detailedInfo: danhmuc, getAssetsDetailedInfo } = AssetStore();
@@ -21,32 +21,30 @@ export default function SupplierManagement() {
     const [assetsBySupplier, setAssetsBySupplier] = useState([]);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchCategories = async () => {
             try {
                 await getAssetsDetailedInfo();
-                await getSuppliers();
             } catch (err) {
-                console.error("Failed to fetch suppliers:", err);
-            } finally {
-                setLoading(false);
+                console.error("Failed to fetch categories:", err);
             }
         };
-
-        fetchData();
-    }, []);
-
+        fetchCategories();
+    }, [getAssetsDetailedInfo]);
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchSuppliers = async () => {
+            setLoading(true);
             try {
-                await getSuppliers(selectedCategoryFilters);
+
+                await getSuppliers({ danhmucId: selectedCategoryFilters });
             } catch (err) {
                 console.error("Failed to fetch suppliers:", err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchData();
-    }, [selectedCategoryFilters]);
+
+        fetchSuppliers();
+    }, [selectedCategoryFilters, getSuppliers]);
 
     const toggleSupplier = (categoryId) => {
         setSelectedCategoryFilters((prevIds) => {
@@ -68,13 +66,29 @@ export default function SupplierManagement() {
             website: data.get("website"),
             lienhe: data.get("lienhe"),
             sodienthoai: data.get("sodienthoai"),
+            ghi_chu: data.get("ghi_chu"),
         };
         try {
             await themNhaCungCap(newSupplier);
+            await getSuppliers();
             setIsAddOpen(false);
             form.reset();
         } catch (err) {
             console.error("Failed to add supplier:", err);
+
+            // Xử lý error message từ backend
+            let errorMessage = "Có lỗi xảy ra khi thêm nhà cung cấp";
+            if (err.response && err.response.data) {
+                if (err.response.data.message) {
+                    errorMessage = err.response.data.message;
+                } else if (err.response.data.error) {
+                    errorMessage = err.response.data.error;
+                }
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+
+            alert(errorMessage);
         }
     };
 
@@ -89,12 +103,27 @@ export default function SupplierManagement() {
             website: data.get("website"),
             lienhe: data.get("lienhe"),
             sodienthoai: data.get("sodienthoai"),
+            ghi_chu: data.get("ghi_chu"),
         };
 
         try {
             await suaNhaCungCap(editingSupplier.id, updated);
         } catch (err) {
             console.error("Failed to update supplier:", err);
+
+            // Xử lý error message từ backend
+            let errorMessage = "Có lỗi xảy ra khi cập nhật nhà cung cấp";
+            if (err.response && err.response.data) {
+                if (err.response.data.message) {
+                    errorMessage = err.response.data.message;
+                } else if (err.response.data.error) {
+                    errorMessage = err.response.data.error;
+                }
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+
+            alert(errorMessage);
         } finally {
             setIsEditSupplierOpen(false);
             setEditingSupplier(null);
@@ -107,6 +136,20 @@ export default function SupplierManagement() {
                 await xoaNhaCungCap(id);
             } catch (err) {
                 console.error("Failed to delete supplier:", err);
+
+                // Xử lý error message từ backend
+                let errorMessage = "Có lỗi xảy ra khi xóa nhà cung cấp";
+                if (err.response && err.response.data) {
+                    if (err.response.data.message) {
+                        errorMessage = err.response.data.message;
+                    } else if (err.response.data.error) {
+                        errorMessage = err.response.data.error;
+                    }
+                } else if (err.message) {
+                    errorMessage = err.message;
+                }
+
+                alert(errorMessage);
             }
         }
     };
@@ -335,6 +378,17 @@ export default function SupplierManagement() {
                                     className="w-full"
                                 />
                             </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="ghi_chu" className="text-sm font-medium">
+                                    Ghi chú
+                                </Label>
+                                <Textarea
+                                    id="ghi_chu"
+                                    name="ghi_chu"
+                                    placeholder="Nhập ghi chú"
+                                    className="w-full h-24"
+                                />
+                            </div>
 
                             <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-4">
                                 <Button
@@ -403,6 +457,17 @@ export default function SupplierManagement() {
                                     name="sodienthoai"
                                     defaultValue={editingSupplier.sodienthoai}
                                     className="w-full"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="ghi_chu" className="text-sm font-medium">
+                                    Ghi chú
+                                </Label>
+                                <Textarea
+                                    id="ghi_chu"
+                                    name="ghi_chu"
+                                    defaultValue={editingSupplier.ghi_chu}
+                                    className="w-full h-24" // h-24 = cao hơn, có thể tăng/giảm theo nhu cầu
                                 />
                             </div>
 

@@ -1,27 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { getSuppliers } from '@/apis/supplier';
+import { SupplierStore } from '../stores/supplier';
 
 const SupplierSelect = ({ value, onValueChange, placeholder = "Chọn nhà cung cấp", danhMucId = null }) => {
-    const [suppliers, setSuppliers] = useState([]);
     const [loading, setLoading] = useState(false);
-
+    const { data: suppliers, getSuppliers } = SupplierStore();
     useEffect(() => {
+        const fetchSuppliers = async () => {
+            await getSuppliers();
+        };
         fetchSuppliers();
-    }, [danhMucId]);
-
-    const fetchSuppliers = async () => {
-        try {
-            setLoading(true);
-            const filter = danhMucId ? [danhMucId] : [];
-            const response = await getSuppliers(filter);
-            setSuppliers(response);
-        } catch (error) {
-            console.error('Error fetching suppliers:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, []);
 
     return (
         <Select value={value} onValueChange={onValueChange}>

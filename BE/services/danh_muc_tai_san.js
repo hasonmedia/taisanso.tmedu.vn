@@ -4,7 +4,6 @@ const { NhaCungCap } = require("../model/nha_cung_cap");
 const { LoaiTaiSan } = require("../model/loai_tai_san");
 const { sequelize } = require("../config/database");
 const { TaiSan } = require("../model/tai_san");
-//chưa sửa
 const getDanhMucTaiSan = async (data, user) => {
   let filter = ``;
 
@@ -22,6 +21,7 @@ const getDanhMucTaiSan = async (data, user) => {
                     ncc.lienhe AS lien_he,
                     ncc.website AS website,
                     ncc.sodienthoai AS so_dien_thoai,
+                    ncc.ghi_chu AS ghi_chu,
                     sp.id AS tai_san_id,
                     sp.ten_tai_san,
                     sp.tong_so_luong,
@@ -85,14 +85,27 @@ const getAllDanhMucTaiSan = async (user, filter = {}) => {
   return results;
 };
 const addDanhMucTaiSan = async (data, user) => {
-  const newDanhMucTaiSan = await DanhMucTaiSan.create(data);
+  try {
+    const check = await DanhMucTaiSan.findOne({
+      where: {
+        ten: data.ten,
+      },
+    });
 
-  const value = {
-    loai_hanh_dong: `Thêm danh mục tài sản : ${data.ten}`,
-    HanhDongId: user.hanh_dong,
-  };
-  await ChiTietHanhDong.create(value);
-  return newDanhMucTaiSan;
+    if (check) {
+      return { success: false, error: "Tên danh mục tài sản đã tồn tại" };
+    }
+    const newDanhMucTaiSan = await DanhMucTaiSan.create(data);
+    const value = {
+      loai_hanh_dong: `Thêm danh mục tài sản : ${data.ten}`,
+      HanhDongId: user.hanh_dong,
+    };
+    await ChiTietHanhDong.create(value);
+    return { success: true, data: newDanhMucTaiSan };
+  } catch (error) {
+    console.error("Lỗi khi thêm danh mục tài sản:", error);
+    return { success: false, error: "Lỗi hệ thống khi thêm danh mục" };
+  }
 };
 const updateDanhMucTaiSan = async (id, data, user) => {
   const danhMucTaiSan = await DanhMucTaiSan.findByPk(id);
@@ -113,6 +126,29 @@ const deleteDanhMucTaiSan = async (id, user) => {
   if (!danhMucTaiSan) {
     return new Error("Danh mục tài sản không tồn tại");
   }
+
+  // Kiểm tra xem có loại tài sản nào đang sử dụng danh mục này không
+  const loaiTaiSanCount = await LoaiTaiSan.count({
+    where: { DanhMucTaiSanId: id },
+  });
+
+  if (loaiTaiSanCount > 0) {
+    return new Error(
+      `Không thể xóa vì còn ${loaiTaiSanCount} loại tài sản đang sử dụng danh mục này`
+    );
+  }
+
+  // Kiểm tra xem có tài sản nào đang sử dụng danh mục này không
+  const taiSanCount = await TaiSan.count({
+    where: { DanhMucTaiSanId: id },
+  });
+
+  if (taiSanCount > 0) {
+    return new Error(
+      `Không thể xóa vì còn ${taiSanCount} tài sản đang sử dụng danh mục này`
+    );
+  }
+
   await danhMucTaiSan.destroy();
   const value = {
     loai_hanh_dong: `Xóa danh mục tài sản có id : ${id} và tên : ${danhMucTaiSan.ten}`,

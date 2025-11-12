@@ -7,13 +7,13 @@ const {
 // Lấy danh sách loại tài sản với phân trang
 const getLoaiTaiSanController = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search, nhaCungCapId } = req.query;
+    const { page = 1, limit = 10, search, danhMucTaiSanId } = req.query;
 
     const result = await getLoaiTaiSanService({
       page: parseInt(page),
       limit: parseInt(limit),
       search,
-      nhaCungCapId: nhaCungCapId ? parseInt(nhaCungCapId) : null,
+      danhMucTaiSanId: danhMucTaiSanId ? parseInt(danhMucTaiSanId) : null,
     });
     res.status(200).json({
       success: true,
@@ -32,7 +32,7 @@ const getLoaiTaiSanController = async (req, res) => {
 
 const addLoaiTaiSanController = async (req, res) => {
   try {
-    const { ten, nhaCungCapId } = req.body;
+    const { ten, danhMucTaiSanId } = req.body;
 
     if (!ten) {
       return res.status(400).json({
@@ -41,20 +41,20 @@ const addLoaiTaiSanController = async (req, res) => {
       });
     }
 
-    if (!nhaCungCapId) {
+    if (!danhMucTaiSanId) {
       return res.status(400).json({
         success: false,
-        message: "Nhà cung cấp là bắt buộc",
+        message: "Danh mục tài sản là bắt buộc",
       });
     }
 
-    const result = await addLoaiTaiSanService({ ten, nhaCungCapId });
+    const result = await addLoaiTaiSanService({ ten, danhMucTaiSanId });
 
     // Log hoạt động
     // await logActivity({
     //   nguoi_dung_id: req.user.id,
     //   loai_hanh_dong: "CREATE_LOAI_TAI_SAN",
-    //   mo_ta: `Tạo loại tài sản mới: ${ten} cho nhà cung cấp ID: ${nhaCungCapId}`,
+    //   mo_ta: `Tạo loại tài sản mới: ${ten} cho danh mục ID: ${danhMucTaiSanId}`,
     //   du_lieu_moi: result,
     //   ip_address: req.ip,
     //   user_agent: req.get("User-Agent"),
@@ -70,10 +70,10 @@ const addLoaiTaiSanController = async (req, res) => {
     if (error.name === "SequelizeUniqueConstraintError") {
       return res.status(400).json({
         success: false,
-        message: "Loại tài sản này đã tồn tại cho nhà cung cấp được chọn",
+        message: "Loại tài sản này đã tồn tại cho danh mục được chọn",
       });
     }
-    if (error.message === "Nhà cung cấp không tồn tại") {
+    if (error.message === "Danh mục tài sản không tồn tại") {
       return res.status(400).json({
         success: false,
         message: error.message,
@@ -91,7 +91,7 @@ const addLoaiTaiSanController = async (req, res) => {
 const updateLoaiTaiSanController = async (req, res) => {
   try {
     const { id } = req.params;
-    const { ten, nhaCungCapId } = req.body;
+    const { ten, danhMucTaiSanId } = req.body;
 
     if (!ten) {
       return res.status(400).json({
@@ -100,7 +100,7 @@ const updateLoaiTaiSanController = async (req, res) => {
       });
     }
 
-    const result = await updateLoaiTaiSanService(id, { ten, nhaCungCapId });
+    const result = await updateLoaiTaiSanService(id, { ten, danhMucTaiSanId });
 
     if (!result) {
       return res.status(404).json({
@@ -129,10 +129,10 @@ const updateLoaiTaiSanController = async (req, res) => {
     if (error.name === "SequelizeUniqueConstraintError") {
       return res.status(400).json({
         success: false,
-        message: "Loại tài sản này đã tồn tại cho nhà cung cấp được chọn",
+        message: "Loại tài sản này đã tồn tại cho danh mục được chọn",
       });
     }
-    if (error.message === "Nhà cung cấp không tồn tại") {
+    if (error.message === "Danh mục tài sản không tồn tại") {
       return res.status(400).json({
         success: false,
         message: error.message,

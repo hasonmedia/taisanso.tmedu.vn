@@ -25,6 +25,10 @@ const NhaCungCap = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: true,
     },
+    ghi_chu: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
     tableName: "nha_cung_cap",

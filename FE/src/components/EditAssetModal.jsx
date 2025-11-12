@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
 import { AssetStore } from "../stores/asset";
+import SupplierSelect from "./SupplierSelect";
+import LoaiTaiSanSelect from "./LoaiTaiSanSelect";
 
 export default function EditAssetModal({ asset, dataCategory, onClose }) {
   const { data: assetStore, updateAsset } = AssetStore();
@@ -10,6 +12,8 @@ export default function EditAssetModal({ asset, dataCategory, onClose }) {
   const [formData, setFormData] = useState({
     ten_tai_san: asset.ten_tai_san || "",
     DanhMucTaiSanId: asset.danh_muc_tai_san_id || "",
+    NhaCungCapId: asset.nha_cung_cap_id || "",
+    LoaiTaiSanId: asset.loai_tai_san_id || "",
     ngay_dang_ky: asset.ngay_dang_ky || "",
     ngay_het_han: asset.ngay_het_han || "",
     thong_tin: asset.thong_tin || {},
@@ -19,7 +23,17 @@ export default function EditAssetModal({ asset, dataCategory, onClose }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+
+      // Reset supplier and asset type when category changes
+      if (name === "DanhMucTaiSanId") {
+        newData.NhaCungCapId = "";
+        newData.LoaiTaiSanId = "";
+      }
+
+      return newData;
+    });
   };
 
   const handleThongTinChange = (key, value) => {
@@ -54,16 +68,32 @@ export default function EditAssetModal({ asset, dataCategory, onClose }) {
 
     try {
       let finalData = { ...formData };
+
+      // Add new field if exists
       if (newField.key.trim()) {
         finalData.thong_tin[newField.key] = newField.value;
+      }
+
+      // Convert IDs to numbers if they exist
+      if (finalData.DanhMucTaiSanId) {
+        finalData.DanhMucTaiSanId = Number(finalData.DanhMucTaiSanId);
+      }
+      if (finalData.NhaCungCapId) {
+        finalData.NhaCungCapId = Number(finalData.NhaCungCapId);
+      }
+      if (finalData.LoaiTaiSanId) {
+        finalData.LoaiTaiSanId = Number(finalData.LoaiTaiSanId);
       }
 
       const response = await updateAsset(asset.id, finalData);
       if (response) {
         setSuccessMessage("✅ Cập nhật thành công!");
+        // Clear new field after successful update
+        setNewField({ key: "", value: "" });
       }
     } catch (error) {
       console.error("Failed to update asset:", error);
+      setSuccessMessage("❌ Có lỗi xảy ra khi cập nhật tài sản!");
     } finally {
       setIsSubmitting(false);
     }
@@ -145,6 +175,31 @@ export default function EditAssetModal({ asset, dataCategory, onClose }) {
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Asset Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+              Loại tài sản:
+            </label>
+            <LoaiTaiSanSelect
+              value={formData.LoaiTaiSanId ? String(formData.LoaiTaiSanId) : ""}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, LoaiTaiSanId: value }))}
+              placeholder={formData.DanhMucTaiSanId ? "Chọn loại tài sản" : "Vui lòng chọn danh mục trước"}
+              categoryId={formData.DanhMucTaiSanId}
+            />
+          </div>
+          {/* Supplier */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+              Nhà cung cấp:
+            </label>
+            <SupplierSelect
+              value={formData.NhaCungCapId ? String(formData.NhaCungCapId) : ""}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, NhaCungCapId: value }))}
+              placeholder="Chọn nhà cung cấp"
+              danhMucId={formData.DanhMucTaiSanId}
+            />
           </div>
 
           {/* Date Grid - Responsive */}

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { AssetStore } from "../../stores/asset";
 import { SupplierStore } from "../../stores/supplier";
-
+import { Textarea } from "@/components/ui/textarea";
 export default function CategoryManagement() {
     const { detailedInfo: danhmuc, getAssetsDetailedInfo } = AssetStore();
     const { data: categories, createThuongHieu, updateThuongHieu, deleteThuongHieu } = ThuongHieuStore();
@@ -67,15 +67,25 @@ export default function CategoryManagement() {
 
         const newCategory = {
             ten: data.get("ten"),
-            link: data.get("link"),
-            lien_he: data.get("lien_he"),
+            ghi_chu: data.get("ghi_chu"),
         };
         try {
             await createThuongHieu(newCategory);
+            await getAssetsDetailedInfo();
             setIsAddOpen(false);
             form.reset();
         } catch (err) {
             console.error("Failed to add category:", err);
+
+            // Xử lý error message từ backend
+            let errorMessage = "Có lỗi xảy ra khi thêm danh mục tài sản";
+            if (err.response && err.response.data && err.response.data.message) {
+                errorMessage = err.response.data.message;
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+
+            alert(errorMessage);
         }
     };
 
@@ -87,14 +97,24 @@ export default function CategoryManagement() {
         const data = new FormData(form);
         const updated = {
             ten: data.get("ten"),
-            link: data.get("link"),
-            lien_he: data.get("lien_he"),
+            ghi_chu: data.get("ghi_chu"),
         };
 
         try {
             await updateThuongHieu(editingCategory.id, updated);
+            await getAssetsDetailedInfo();
         } catch (err) {
             console.error("Failed to update category:", err);
+
+            // Xử lý error message từ backend
+            let errorMessage = "Có lỗi xảy ra khi cập nhật danh mục tài sản";
+            if (err.response && err.response.data && err.response.data.message) {
+                errorMessage = err.response.data.message;
+            } else if (err.message) {
+                errorMessage = err.message;
+            }
+
+            alert(errorMessage);
         } finally {
             setIsEditOpen(false);
             setEditingCategory(null);
@@ -105,12 +125,22 @@ export default function CategoryManagement() {
         if (window.confirm("Bạn có chắc chắn muốn xóa danh mục tài sản này không?")) {
             try {
                 await deleteThuongHieu(id);
+                await getAssetsDetailedInfo();
             } catch (err) {
                 console.error("Failed to delete category:", err);
+
+                // Xử lý error message từ backend
+                let errorMessage = "Có lỗi xảy ra khi xóa danh mục tài sản";
+                if (err.response && err.response.data && err.response.data.message) {
+                    errorMessage = err.response.data.message;
+                } else if (err.message) {
+                    errorMessage = err.message;
+                }
+
+                alert(errorMessage);
             }
         }
     };
-
     if (loading) {
         return (
             <div className="flex items-center justify-center py-8">
@@ -300,25 +330,17 @@ export default function CategoryManagement() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="link" className="text-sm font-medium">Website</Label>
-                                <Input
-                                    id="link"
-                                    name="link"
-                                    placeholder="https://example.com"
-                                    className="w-full"
+                                <Label htmlFor="ghi_chu" className="text-sm font-medium">
+                                    Ghi chú
+                                </Label>
+                                <Textarea
+                                    id="ghi_chu"
+                                    name="ghi_chu"
+                                    placeholder="Nhập ghi chú"
+                                    className="w-full h-24" // h-24 = cao hơn, có thể tăng/giảm theo nhu cầu
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="lien_he" className="text-sm font-medium">Email liên hệ</Label>
-                                <Input
-                                    id="lien_he"
-                                    name="lien_he"
-                                    type="email"
-                                    placeholder="email@example.com"
-                                    className="w-full"
-                                />
-                            </div>
 
                             <DialogFooter className="flex flex-col-reverse sm:flex-row gap-2 pt-4">
                                 <Button
@@ -359,25 +381,15 @@ export default function CategoryManagement() {
                                     className="w-full"
                                 />
                             </div>
-
                             <div className="space-y-2">
-                                <Label htmlFor="edit-link" className="text-sm font-medium">Website</Label>
-                                <Input
-                                    id="edit-link"
-                                    name="link"
-                                    defaultValue={editingCategory.link}
-                                    className="w-full"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="edit-lien_he" className="text-sm font-medium">Email liên hệ</Label>
-                                <Input
-                                    id="edit-lien_he"
-                                    name="lien_he"
-                                    type="email"
-                                    defaultValue={editingCategory.lien_he}
-                                    className="w-full"
+                                <Label htmlFor="ghi_chu" className="text-sm font-medium">
+                                    Ghi chú
+                                </Label>
+                                <Textarea
+                                    id="ghi_chu"
+                                    name="ghi_chu"
+                                    defaultValue={editingCategory.ghi_chu}
+                                    className="w-full h-24" // h-24 = cao hơn, có thể tăng/giảm theo nhu cầu
                                 />
                             </div>
 

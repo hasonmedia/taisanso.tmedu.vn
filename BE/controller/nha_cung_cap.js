@@ -7,8 +7,7 @@ const {
 
 const getNhaCungCapController = async (req, res) => {
   try {
-    const idArray = req.query["danhmucIds[]"];
-    const results = await getNhaCungCap(idArray);
+    const results = await getNhaCungCap(req.query);
     res.status(200).json(results);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -18,6 +17,12 @@ const getNhaCungCapController = async (req, res) => {
 const addNhaCungCapController = async (req, res) => {
   try {
     const newNhaCungCap = await addNhaCungCap(req.body);
+    if (newNhaCungCap.success === false) {
+      return res.status(400).json({
+        status: false,
+        message: newNhaCungCap.error,
+      });
+    }
     res.status(201).json(newNhaCungCap);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -41,12 +46,24 @@ const deleteNhaCungCapController = async (req, res) => {
   try {
     const { id } = req.params;
     const result = await deleteNhaCungCap(id);
-    if (result instanceof Error) {
-      return res.status(404).json({ error: result.message });
+
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message,
+      });
     }
-    res.status(200).json(result);
+
+    res.status(200).json({
+      success: true,
+      message: result.message,
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi xóa nhà cung cấp",
+      error: error.message,
+    });
   }
 };
 

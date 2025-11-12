@@ -1582,10 +1582,10 @@ adminRouter.delete(
  *           type: string
  *         description: Tìm kiếm theo tên loại tài sản
  *       - in: query
- *         name: nhaCungCapId
+ *         name: danhMucTaiSanId
  *         schema:
  *           type: integer
- *         description: Lọc theo nhà cung cấp
+ *         description: Lọc theo danh mục tài sản
  *     responses:
  *       200:
  *         description: Lấy danh sách thành công
@@ -1627,15 +1627,15 @@ adminRouter.delete(
  *             type: object
  *             required:
  *               - ten
- *               - nhaCungCapId
+ *               - danhMucTaiSanId
  *             properties:
  *               ten:
  *                 type: string
- *                 example: "Nhóm (Group)"
- *               nhaCungCapId:
+ *                 example: "Laptop"
+ *               danhMucTaiSanId:
  *                 type: integer
  *                 example: 1
- *                 description: "ID của nhà cung cấp (ví dụ: Facebook)"
+ *                 description: "ID của danh mục tài sản"
  *     responses:
  *       201:
  *         description: Thêm loại tài sản thành công
@@ -1679,11 +1679,11 @@ adminRouter.post(
  *             properties:
  *               ten:
  *                 type: string
- *                 example: "Trang (Page)"
- *               nhaCungCapId:
+ *                 example: "Desktop"
+ *               danhMucTaiSanId:
  *                 type: integer
  *                 example: 1
- *                 description: "ID của nhà cung cấp (tùy chọn)"
+ *                 description: "ID của danh mục tài sản (tùy chọn)"
  *     responses:
  *       200:
  *         description: Cập nhật thành công

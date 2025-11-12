@@ -14,11 +14,12 @@ const LoaiTaiSan = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    NhaCungCapId: {
+    // Khóa ngoại, quan hệ "con" với DanhMucTaiSan
+    DanhMucTaiSanId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: false, // Loại tài sản phải thuộc 1 danh mục
       references: {
-        model: "nha_cung_cap",
+        model: "danh_muc_tai_san",
         key: "id",
       },
     },
@@ -28,9 +29,4 @@ const LoaiTaiSan = sequelize.define(
     timestamps: false,
   }
 );
-
-// Thiết lập quan hệ
-LoaiTaiSan.belongsTo(NhaCungCap, { foreignKey: "NhaCungCapId" });
-NhaCungCap.hasMany(LoaiTaiSan, { foreignKey: "NhaCungCapId" });
-
 module.exports = { LoaiTaiSan };

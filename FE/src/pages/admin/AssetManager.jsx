@@ -4,14 +4,18 @@ import { toast } from "react-toastify";
 import AssetModal from "../../components/AssetModal";
 import EditAssetModal from "../../components/EditAssetModal";
 import ViewAssetModal from "../../components/ViewAssetModal";
+import SupplierSelect from "../../components/SupplierSelect";
+import LoaiTaiSanSelect from "../../components/LoaiTaiSanSelect";
 import { AssetStore } from "../../stores/asset";
 import { ThuongHieuStore } from "../../stores/thuonghieu";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import PaginationControls from "@/components/PaginationControls";
+import { SupplierStore } from "../../stores/supplier";
+import { LoaiTaiSanStore } from "../../stores/loaiTaiSan";
+import { Button } from "../../components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table";
+import { Input } from "../../components/ui/input";
+import { Badge } from "../../components/ui/badge";
+import PaginationControls from "../../components/PaginationControls";
 export default function AssetManager() {
   // Get state from Zustand stores
   const {
@@ -22,9 +26,13 @@ export default function AssetManager() {
     loading: assetLoading,
   } = AssetStore();
   const { data: categories, getAllThuongHieu } = ThuongHieuStore();
+  const { data: suppliers, getSuppliers } = SupplierStore();
+  const { data: assetTypes, getAllLoaiTaiSan } = LoaiTaiSanStore();
 
   // Local state for filters and pagination
   const [selectedCategoryId, setSelectedCategoryId] = useState("all");
+  const [selectedAssetTypeId, setSelectedAssetTypeId] = useState("all");
+  const [selectedSupplierId, setSelectedSupplierId] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [limit, setLimit] = useState(10); // Default limit, matches store
@@ -36,17 +44,36 @@ export default function AssetManager() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Fetch categories (brands) once on mount
+  // Fetch initial data once on mount
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchInitialData = async () => {
       try {
-        await getAllThuongHieu();
+        await Promise.all([
+          getAllThuongHieu(),
+          getSuppliers(),
+        ]);
       } catch (err) {
-        console.error("Lỗi khi tải danh mục:", err);
+        console.error("Lỗi khi tải dữ liệu khởi tạo:", err);
       }
     };
-    fetchCategories();
-  }, [getAllThuongHieu]);
+    fetchInitialData();
+  }, [getAllThuongHieu, getSuppliers]);
+
+  // Fetch asset types when category changes
+  useEffect(() => {
+    const fetchAssetTypes = async () => {
+      if (selectedCategoryId !== "all") {
+        try {
+          await getAllLoaiTaiSan({ danhMucTaiSanId: selectedCategoryId });
+        } catch (err) {
+          console.error("Lỗi khi tải loại tài sản:", err);
+        }
+      } else {
+        await getAllLoaiTaiSan();
+      }
+    };
+    fetchAssetTypes();
+  }, [selectedCategoryId, getAllLoaiTaiSan]);
 
   // Fetch assets whenever filters, pagination, or modal states change
   useEffect(() => {
@@ -54,12 +81,16 @@ export default function AssetManager() {
       // Only fetch if modals are closed
       if (!isAddModalOpen && !isEditModalOpen) {
         try {
-          await getAllAsset({
+          const filters = {
             page: currentPage,
             limit: limit,
-            search: searchTerm || null, // Pass null if empty
+            search: searchTerm || null,
             idDanhMucTaiSan: selectedCategoryId === "all" ? null : parseInt(selectedCategoryId),
-          });
+            idLoaiTaiSan: selectedAssetTypeId === "all" ? null : parseInt(selectedAssetTypeId),
+            idNhaCungCap: selectedSupplierId === "all" ? null : parseInt(selectedSupplierId),
+          };
+
+          await getAllAsset(filters);
         } catch (err) {
           console.error("Lỗi khi tải tài sản:", err);
           toast.error("Lỗi khi tải dữ liệu tài sản");
@@ -73,14 +104,27 @@ export default function AssetManager() {
     limit,
     searchTerm,
     selectedCategoryId,
+    selectedAssetTypeId,
+    selectedSupplierId,
     isAddModalOpen,
     isEditModalOpen,
   ]);
 
-  // Reset to page 1 when filters (search, category, limit) change
+  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedCategoryId, limit]);
+  }, [searchTerm, selectedCategoryId, selectedAssetTypeId, selectedSupplierId, limit]);
+
+  // Reset asset type and supplier when category changes
+  useEffect(() => {
+    if (selectedCategoryId === "all") {
+      setSelectedAssetTypeId("all");
+      setSelectedSupplierId("all");
+    } else {
+      setSelectedAssetTypeId("all");
+      // Keep supplier selection as it may not be category-dependent
+    }
+  }, [selectedCategoryId]);
 
   const handleViewClick = (asset) => {
     setSelectedAsset(asset);
@@ -96,18 +140,14 @@ export default function AssetManager() {
     setIsEditModalOpen(false);
     // Refetching is handled by the main useEffect detecting the state change
     if (success) {
-      toast.success("Cập nhật tài sản thành công!");
+      alert("Cập nhật tài sản thành công!");
     }
   };
 
   const handleAddModalClose = (success) => {
     setIsAddModalOpen(false);
-    // Refetching is handled by the main useEffect detecting the state change
     if (success) {
-      toast.success("Thêm tài sản thành công!");
-      // Note: The useEffect that resets page will trigger, 
-      // but the main data fetch will use currentPage (which might not be 1).
-      // If we want to force page 1 after add, we can set it here.
+      alert("Thêm tài sản thành công!");
       setCurrentPage(1);
     }
   }
@@ -126,12 +166,15 @@ export default function AssetManager() {
       } else {
         // Otherwise, just refetch the current page (triggered by useEffect)
         // To be safe, we can force a refetch here
-        await getAllAsset({
+        const filters = {
           page: currentPage,
           limit: limit,
           search: searchTerm || null,
-          categoryId: selectedCategoryId === "all" ? null : parseInt(selectedCategoryId),
-        });
+          idDanhMucTaiSan: selectedCategoryId === "all" ? null : parseInt(selectedCategoryId),
+          idLoaiTaiSan: selectedAssetTypeId === "all" ? null : parseInt(selectedAssetTypeId),
+          idNhaCungCap: selectedSupplierId === "all" ? null : parseInt(selectedSupplierId),
+        };
+        await getAllAsset(filters);
       }
     } catch (err) {
       console.error(err);
@@ -272,9 +315,7 @@ export default function AssetManager() {
 
         {isAddModalOpen && (
           <AssetModal
-            dataCategory={categories}
             setIsModalOpen={setIsAddModalOpen}
-            onClose={handleAddModalClose} // Pass close handler
           />
         )}
         {isViewModalOpen && selectedAsset && (
@@ -304,7 +345,8 @@ export default function AssetManager() {
             </Button>
           </div>
 
-          <div className={`space-y-3 md:space-y-0 ${showFilters ? "block" : "hidden md:block"}`}>
+          <div className={`space-y-4 md:space-y-0 ${showFilters ? "block" : "hidden md:block"}`}>
+            {/* First Row: Category and Asset Type */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-sm font-medium text-gray-700 block">Danh mục</label>
@@ -324,22 +366,92 @@ export default function AssetManager() {
               </div>
 
               <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700 block">Loại tài sản</label>
+                <Select
+                  value={selectedAssetTypeId}
+                  onValueChange={setSelectedAssetTypeId}
+                  disabled={selectedCategoryId === "all"}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={
+                      selectedCategoryId === "all"
+                        ? "Vui lòng chọn danh mục trước"
+                        : "Tất Cả Loại Tài Sản"
+                    } />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất Cả Loại Tài Sản</SelectItem>
+                    {assetTypes.map((type) => (
+                      <SelectItem key={type.id} value={String(type.id)}>
+                        {type.ten}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Second Row: Supplier and Search */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700 block">Nhà cung cấp</label>
+                <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Tất Cả Nhà Cung Cấp" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất Cả Nhà Cung Cấp</SelectItem>
+                    {suppliers.map((supplier) => (
+                      <SelectItem key={supplier.id} value={String(supplier.id)}>
+                        {supplier.ten_nha_cung_cap || supplier.ten}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
                 <label className="text-sm font-medium text-gray-700 block">Tìm kiếm</label>
                 <Input
-                  placeholder="Tìm kiếm tài sản..."
+                  placeholder="Tìm kiếm tài sản, nhà cung cấp, loại..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full"
                 />
               </div>
             </div>
+
+            {/* Reset Filters Button */}
+            {(selectedCategoryId !== "all" || selectedAssetTypeId !== "all" || selectedSupplierId !== "all" || searchTerm) && (
+              <div className="flex justify-center mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedCategoryId("all");
+                    setSelectedAssetTypeId("all");
+                    setSelectedSupplierId("all");
+                    setSearchTerm("");
+                  }}
+                  className="text-sm"
+                >
+                  Xóa tất cả bộ lọc
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between text-sm text-gray-600 mt-4 pt-4 border-t border-gray-200">
-            <span>
-              Hiển thị <strong>{assets.length}</strong> trên tổng số{" "}
-              <strong>{pagination.total}</strong> tài sản
-            </span>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <span>
+                Hiển thị <strong>{assets.length}</strong> trên tổng số{" "}
+                <strong>{pagination.total}</strong> tài sản
+              </span>
+              {(selectedCategoryId !== "all" || selectedAssetTypeId !== "all" || selectedSupplierId !== "all" || searchTerm) && (
+                <span className="text-blue-600 text-xs">
+                  (Đã áp dụng bộ lọc)
+                </span>
+              )}
+            </div>
             {assetLoading && (
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>

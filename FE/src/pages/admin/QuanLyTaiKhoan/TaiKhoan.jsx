@@ -49,11 +49,9 @@ export default function UserManagement() {
     fetchData();
   }, []);
 
-  console.log(dataLevel1)
-
   const handleThemTaiKhoan = async (formData) => {
     const response = await themTaiKhoan(formData);
-    console.log("res", response)
+    getUsers();
     if (!response || !response.status) {
       const errorMessage = response?.error || "Thêm tài khoản thất bại";
       alert(errorMessage);
@@ -70,10 +68,10 @@ export default function UserManagement() {
   // Hàm cập nhật
   const handleCapNhatTaiKhoan = async (formData) => {
     try {
-      console.log(formData)
       if (!editUser) return;
       setLoading(true);
       await suaTaiKhoan(editUser.id, formData);
+      await getUsers();
       alert("Cập nhật tài khoản thành công");
       setEditUser(null);
       setShowModal(false);

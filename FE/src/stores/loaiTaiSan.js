@@ -13,7 +13,6 @@ export const LoaiTaiSanStore = create((set) => ({
   getAllLoaiTaiSan: async (params = {}) => {
     try {
       const response = await apiGetAll(params);
-      // response.data có thể chứa {data: [...], meta: {...}} hoặc chỉ mảng
       set({ data: response.data });
       return response.data;
     } catch (error) {
@@ -32,7 +31,7 @@ export const LoaiTaiSanStore = create((set) => ({
       return response.data;
     } catch (error) {
       console.error("Error creating LoaiTaiSan:", error);
-      return null;
+      throw error; // Re-throw để component có thể catch
     }
   },
 
@@ -46,7 +45,7 @@ export const LoaiTaiSanStore = create((set) => ({
       return response.data;
     } catch (error) {
       console.error("Error updating LoaiTaiSan:", error);
-      return null;
+      throw error; // Re-throw để component có thể catch
     }
   },
 
@@ -60,7 +59,7 @@ export const LoaiTaiSanStore = create((set) => ({
       return true;
     } catch (error) {
       console.error("Error deleting LoaiTaiSan:", error);
-      return false;
+      throw error; // Re-throw để component có thể catch
     }
   },
 }));

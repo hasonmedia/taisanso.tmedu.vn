@@ -31,7 +31,12 @@ const getAllDanhMucTaiSanController = async (req, res) => {
 const addDanhMucTaiSan = async (req, res) => {
   try {
     const data = await DanhMucTaiSan.addDanhMucTaiSan(req.body, req.user);
-    // await YeuCau.postYeuCau(req.body, req.user.hanh_dong);
+    if (data.success === false) {
+      return res.status(400).json({
+        status: false,
+        message: data.error,
+      });
+    }
     res.status(201).json({
       status: true,
       message: "Thêm danh mục tài sản thành công",
@@ -66,6 +71,14 @@ const deleteDanhMucTaiSan = async (req, res) => {
   try {
     const { id } = req.params;
     const data = await DanhMucTaiSan.deleteDanhMucTaiSan(id, req.user);
+
+    if (data instanceof Error) {
+      return res.status(400).json({
+        status: false,
+        message: data.message,
+      });
+    }
+
     res.status(200).json({
       status: true,
       message: "Xóa danh mục tài sản thành công",
