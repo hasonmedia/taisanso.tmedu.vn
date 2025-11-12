@@ -39,7 +39,7 @@ const getTaiSan = async (data, user) => {
   // Search filter
   if (search) {
     const searchCondition = `
-      (ts.ten_tai_san ILIKE '%${search}%' OR ncc.ten ILIKE '%${search}%' OR lts.ten ILIKE '%${search}%')
+      (ts.ten_tai_san ILIKE '%${search}%')
     `;
     filter += filter ? ` AND ${searchCondition}` : `WHERE ${searchCondition}`;
   }
