@@ -1,5 +1,14 @@
-import { useState, useEffect } from "react";
-import { Eye, EyeOff, User, Lock, Phone, Building, Hash } from "lucide-react";
+import { useState, useEffect, useMemo } from "react"; // <-- Thêm useMemo
+import {
+    Eye,
+    EyeOff,
+    User,
+    Lock,
+    Phone,
+    Building,
+    Hash,
+    Activity, // <-- Thêm icon mới
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export default function ThemTaiKhoan({
@@ -17,14 +26,33 @@ export default function ThemTaiKhoan({
         password: "",
         ho_ten: "",
         sdt: "",
-        m_s_n_v: "",      // <-- Thêm mã số nhân viên
+        m_s_n_v: "",
         cap: user.user.cap === 1 ? 2 : 0,
         PhongBanId: 0,
+        is_active: true, // <-- Thêm trạng thái
     });
-
 
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({});
+
+    // Sửa lỗi: Di chuyển logic này lên trên và dùng useMemo
+    const availableOptions = useMemo(() => {
+        const capOptions = [
+            { value: 0, label: "Root" },
+            { value: 1, label: "Quản trị viên" },
+            { value: 2, label: "Trưởng bộ phận" },
+            { value: 3, label: "Nhân viên" },
+        ];
+
+        if (!user?.user) return []; // Guard clause nếu user chưa load
+
+        return capOptions.filter((opt) => {
+            if (user.user.cap === 0) return true; // cấp 0 chọn tất cả
+            if (user.user.cap === 1) return opt.value >= 2;
+            if (user.user.cap === 2) return opt.value === 3;
+            return false; // cấp 3 không chọn gì khác
+        });
+    }, [user?.user]); // Phụ thuộc vào user
 
     useEffect(() => {
         if (editUser) {
@@ -33,40 +61,48 @@ export default function ThemTaiKhoan({
                 password: "",
                 ho_ten: editUser.ho_ten || "",
                 sdt: editUser.sdt || "",
-                m_s_n_v: editUser.m_s_n_v || "",   // <-- thêm
+                m_s_n_v: editUser.m_s_n_v || "",
                 cap: editUser.cap || availableOptions[0]?.value || 0,
                 PhongBanId: editUser.phong_ban_id || 0,
+                is_active: editUser.is_active ?? true, // <-- Thêm
             });
         } else if (showModal) {
+            // Reset form
             setFormData({
                 username: "",
                 password: "",
                 ho_ten: "",
                 sdt: "",
-                m_s_n_v: "",   // <-- thêm
+                m_s_n_v: "",
                 cap: availableOptions[0]?.value || 0,
                 PhongBanId: 0,
+                is_active: true, // <-- Thêm (mặc định là active)
             });
         }
         setErrors({});
-    }, [editUser, showModal]);
-
+    }, [editUser, showModal, availableOptions]); // <-- Thêm availableOptions vào dependency
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, type, checked } = e.target; // <-- Thêm type và checked
+
         setFormData((prev) => ({
             ...prev,
             [name]:
-                name === "cap" || name === "PhongBanId" ? Number(value) || 0 : value,
+                type === "checkbox" // <-- Xử lý cho toggle/checkbox
+                    ? checked
+                    : name === "cap" || name === "PhongBanId"
+                        ? Number(value) || 0
+                        : value,
         }));
 
         // Clear error when user starts typing
         if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: "" }));
+            setErrors((prev) => ({ ...prev, [name]: "" }));
         }
     };
 
     const validateForm = () => {
+        // ... (validation logic không đổi)
         const newErrors = {};
 
         if (!formData.username.trim()) {
@@ -98,32 +134,23 @@ export default function ThemTaiKhoan({
             alert("Bạn không có quyền tạo tài khoản cấp 0");
             return;
         }
-
-        await onSubmit(formData);
+        const dataToSubmit = { ...formData };
+        if (editUser && !dataToSubmit.password.trim()) {
+            delete dataToSubmit.password;
+        }
+        await onSubmit(dataToSubmit);
         setShowModal(false);
     };
 
     if (!showModal) return null;
-    const capOptions = [
-        { value: 0, label: 'Root' },
-        { value: 1, label: 'Quản trị viên' },
-        { value: 2, label: 'Trưởng bộ phận' },
-        { value: 3, label: 'Nhân viên' },
-    ];
-    console.log("123", user)
-    // Tạo filter theo cap của user hiện tại
-    const availableOptions = capOptions.filter(opt => {
-        if (user.user.cap === 0) return true;       // cấp 0 chọn tất cả
-        if (user.user.cap === 1) return opt.value >= 2;
-        if (user.user.cap === 2) return opt.value === 3;
-        return false; // cấp 3 không chọn gì khác
-    });
+    // console.log("123", user) // Logic `availableOptions` đã được chuyển lên trên
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 mb-0">
             <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
                 {/* Header */}
                 <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-xl">
+                    {/* ... (Header content không đổi) */}
                     <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                         {editUser ? "Cập nhật tài khoản" : "Thêm tài khoản"}
                     </h2>
@@ -134,6 +161,7 @@ export default function ThemTaiKhoan({
 
                 {/* Form */}
                 <div className="px-4 sm:px-6 py-4 space-y-4 sm:space-y-5">
+                    {/* ... (Mã số nhân viên, Username, Password, Họ tên, Số điện thoại không đổi) ... */}
                     {/* Mã số nhân viên */}
                     <div className="space-y-2">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
@@ -147,12 +175,12 @@ export default function ThemTaiKhoan({
                             value={formData.m_s_n_v}
                             onChange={handleChange}
                             placeholder="Nhập mã số nhân viên"
-                            className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${errors.ma_nv
+                            className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${errors.m_s_n_v // <-- Sửa lỗi: dùng m_s_n_v
                                 ? 'border-red-300 focus:ring-red-500'
                                 : 'border-gray-300 focus:ring-blue-500'
                                 }`}
                         />
-                        {errors.m_s_n_v && (
+                        {errors.m_s_n_v && ( // <-- Sửa lỗi: dùng m_s_n_v
                             <p className="text-red-500 text-xs">{errors.m_s_n_v}</p>
                         )}
                     </div>
@@ -258,6 +286,45 @@ export default function ThemTaiKhoan({
                         )}
                     </div>
 
+                    {/* ----- MỚI: Thêm Trạng thái ----- */}
+                    <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <Activity className="w-4 h-4 text-gray-500" />
+                            Trạng thái
+                        </label>
+                        <div className="flex items-center space-x-3">
+                            <input
+                                type="checkbox"
+                                id="is_active"
+                                name="is_active"
+                                checked={formData.is_active}
+                                onChange={handleChange}
+                                className="hidden"
+                            />
+                            <label
+                                htmlFor="is_active"
+                                className={`relative inline-flex items-center h-6 rounded-full w-11 cursor-pointer transition-colors ${formData.is_active
+                                    ? "bg-blue-600"
+                                    : "bg-gray-300"
+                                    }`}
+                            >
+                                <span
+                                    className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${formData.is_active
+                                        ? "translate-x-6"
+                                        : "translate-x-1"
+                                        }`}
+                                />
+                            </label>
+                            <span className="text-sm text-gray-700">
+                                {formData.is_active
+                                    ? "Đang kích hoạt"
+                                    : "Vô hiệu hóa"}
+                            </span>
+                        </div>
+                    </div>
+                    {/* ----- KẾT THÚC ----- */}
+
+
                     {/* Two column layout for Cap and Phong ban on larger screens */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {/* Cấp */}
@@ -272,15 +339,13 @@ export default function ThemTaiKhoan({
                                 onChange={handleChange}
                                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                             >
-                                {availableOptions.map(opt => (
+                                {availableOptions.map((opt) => (
                                     <option key={opt.value} value={opt.value}>
                                         {opt.label}
                                     </option>
                                 ))}
                             </select>
-
                         </div>
-
 
                         {/* Phòng ban */}
                         <div className="space-y-2">
@@ -289,18 +354,14 @@ export default function ThemTaiKhoan({
                                 Phòng ban
                             </label>
                             <select
-                                value={formData.PhongBanId ? String(formData.PhongBanId) : "0"}
-                                onChange={(e) =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        PhongBanId: Number(e.target.value) || 0,
-                                    }))
-                                }
+                                name="PhongBanId" // <-- Thêm name để handleChange có thể dùng
+                                value={formData.PhongBanId} // <-- Đã có trong state
+                                onChange={handleChange} // <-- Dùng handleChange chung
                                 className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                             >
-                                <option value="0">-- Chọn phòng ban --</option>
+                                <option value={0}>-- Chọn phòng ban --</option>
                                 {phong_ban?.map((pb) => (
-                                    <option key={pb.id} value={String(pb.id)}>
+                                    <option key={pb.id} value={pb.id}>
                                         {pb.ten}
                                     </option>
                                 ))}
@@ -311,6 +372,7 @@ export default function ThemTaiKhoan({
 
                 {/* Footer */}
                 <div className="sticky bottom-0 bg-gray-50 px-4 sm:px-6 py-4 rounded-b-xl border-t border-gray-200">
+                    {/* ... (Footer content không đổi) */}
                     <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
                         <button
                             type="button"

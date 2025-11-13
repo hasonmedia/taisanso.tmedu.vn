@@ -47,13 +47,13 @@ const loginUser = async (data) => {
     if (!user) {
       return -1;
     } else {
-      console.log(data.password);
-      console.log(user.password);
       const check = await bcrypt.compare(data.password, user.password);
-      console.log("check", check);
       if (!check) {
         return -2;
       } else {
+        if (!user.is_active) {
+          return -3;
+        }
         return user;
       }
     }
@@ -75,10 +75,11 @@ const verifyToken = (token) => {
 const updateTaiKhoan = async (id, data, user) => {
   try {
     const tai_khoan = await TaiKhoan.findByPk(id);
-
-    // Kiểm tra quyền sửa tài khoản
-    if (user.id !== tai_khoan.id && user.cap === tai_khoan.cap) {
-      throw new Error("Bạn không có quyền sửa tài khoản cùng cấp");
+    if (user.cap != 0) {
+      // Kiểm tra quyền sửa tài khoản
+      if (user.id !== tai_khoan.id && user.cap === tai_khoan.cap) {
+        throw new Error("Bạn không có quyền sửa tài khoản cùng cấp");
+      }
     }
 
     const oldPhongBanId = tai_khoan.PhongBanId;
@@ -121,9 +122,39 @@ const updateTaiKhoan = async (id, data, user) => {
   }
 };
 
+const deleteTaiKhoan = async (id, user) => {
+  try {
+    const tai_khoan = await TaiKhoan.findByPk(id);
+    if (user.cap != 0) {
+      if (user.id !== tai_khoan.id && user.cap === tai_khoan.cap) {
+        throw new Error("Bạn không có quyền xóa tài khoản cùng cấp");
+      }
+    }
+    await tai_khoan.destroy();
+
+    // Cập nhật số lượng nhân viên trong phòng ban
+    const soLuong = await TaiKhoan.count({
+      where: { PhongBanId: tai_khoan.PhongBanId },
+    });
+    await PhongBan.update(
+      { soluong: soLuong },
+      { where: { id: tai_khoan.PhongBanId } }
+    );
+    // Lưu log hành động
+    const value = {
+      loai_hanh_dong: `Xóa tài khoản nhân viên : ${tai_khoan.ho_ten} cấp : ${tai_khoan.cap}`,
+      HanhDongId: user.hanh_dong,
+    };
+    await ChiTietHanhDong.create(value);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   verifyToken,
   updateTaiKhoan,
+  deleteTaiKhoan,
 };

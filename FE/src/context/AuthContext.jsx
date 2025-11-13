@@ -26,17 +26,36 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
+      // BE trả 200: thành công
       const data = await axiosCofig.post("/auth/login", credentials);
-      console.log("11", data)
       setUser(data.user);
       return data;
     } catch (err) {
+      // BE trả 404, 403... axios tự động ném lỗi
+      // err.response.data.message sẽ là "Không tìm thấy email", "Sai mật khẩu", v.v.
       setError(err.response?.data?.message || "Đăng nhập thất bại");
       throw err;
     } finally {
       setLoading(false);
     }
   };
+  // const login = async (credentials) => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const data = await axiosCofig.post("/auth/login", credentials);
+  //     if (data.success == false) {
+  //       throw new Error(data.message || "Đăng nhập thất bại");
+  //     }
+  //     setUser(data.user);
+  //     return data;
+  //   } catch (err) {
+  //     setError(err.response?.data?.message || err.message || "Đăng nhập thất bạii");
+  //     throw err;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleLogout = async () => {
     setLoading(true);

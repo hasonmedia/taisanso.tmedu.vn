@@ -1,51 +1,58 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
-const { PhongBan } = require('./phong_ban');
+const { DataTypes } = require("sequelize");
+const { sequelize } = require("../config/database");
+const { PhongBan } = require("./phong_ban");
 const bcrypt = require("bcrypt");
 
-const TaiKhoan = sequelize.define('TaiKhoan', {
+const TaiKhoan = sequelize.define(
+  "TaiKhoan",
+  {
     m_s_n_v: {
-        type: DataTypes.STRING(100),
-        unique: true,
-        allowNull: true
+      type: DataTypes.STRING(100),
+      unique: true,
+      allowNull: true,
     },
     username: {
-        type: DataTypes.STRING(100),
-        unique: true,
-        allowNull: false
+      type: DataTypes.STRING(100),
+      unique: true,
+      allowNull: false,
     },
     password: {
-        type: DataTypes.STRING(255),
-        allowNull: false
+      type: DataTypes.STRING(255),
+      allowNull: false,
     },
     ho_ten: {
-        type: DataTypes.STRING(255),
-        allowNull: false
+      type: DataTypes.STRING(255),
+      allowNull: false,
     },
     sdt: {
-        type: DataTypes.STRING(255),
-        allowNull: false
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
+    is_active: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
     cap: {
-        type: DataTypes.SMALLINT,
-        validate: {
-            isIn: [[0, 1, 2, 3]]
-        }
-    }
-}, {
-    tableName: 'tai_khoan',
-    timestamps: false
-});
+      type: DataTypes.SMALLINT,
+      validate: {
+        isIn: [[0, 1, 2, 3]],
+      },
+    },
+  },
+  {
+    tableName: "tai_khoan",
+    timestamps: false,
+  }
+);
 
 TaiKhoan.belongsTo(PhongBan);
 
 PhongBan.hasMany(TaiKhoan);
 
-
 TaiKhoan.beforeUpdate(async (user) => {
-    if (user.changed('password')) {
-        const hashedPassword = await bcrypt.hash(user.password, 10);
-        user.password = hashedPassword;
-    }
-})
+  if (user.changed("password")) {
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+    user.password = hashedPassword;
+  }
+});
 module.exports = { TaiKhoan };

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { UserStore } from "../../../stores/tai_khoan";
 import { DepartmentStore } from "../../../stores/department";
 import ThemTaiKhoan from "./ThemTaiKhoan";
-import { Edit } from "lucide-react";
+import { Delete, Edit, Trash2 } from "lucide-react"; // Pencil không còn dùng nhưng tôi để lại
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -27,7 +27,7 @@ export default function UserManagement() {
   const userStore = UserStore();
   const departmentStore = DepartmentStore();
   const auth = useAuth();
-  const { data: dataLevel1, getUsers, themTaiKhoan, suaTaiKhoan } = userStore;
+  const { data: dataLevel1, getUsers, themTaiKhoan, suaTaiKhoan, xoaTaiKhoan } = userStore;
   const { data: phong_ban, getAllDepartment } = departmentStore;
 
   const [selectedPhongBan, setSelectedPhongBan] = useState("all");
@@ -101,9 +101,11 @@ export default function UserManagement() {
           size="sm"
           variant="outline"
           onClick={() => {
-            if (auth.user.cap === user.cap && auth.user.id !== user.id) {
-              alert("Bạn không có quyền sửa tài khoản cùng cấp");
-              return;
+            if (auth.user.cap != 0) {
+              if (auth.user.cap === user.cap && auth.user.id !== user.id) {
+                alert("Bạn không có quyền sửa tài khoản cùng cấp");
+                return;
+              }
             }
             setEditUser(user);
             setShowModal(true);
@@ -120,7 +122,7 @@ export default function UserManagement() {
         </div>
         <div>
           <span className="font-medium text-gray-700">Cấp:</span>
-          <p className="text-gray-600">{user.cap || "—"}</p>
+          <p className="text-gray-600">{capToLetter(user.cap) || "—"}</p>
         </div>
         <div>
           <span className="font-medium text-gray-700">Bộ phận:</span>
@@ -132,6 +134,20 @@ export default function UserManagement() {
           <span className="font-medium text-gray-700">SĐT:</span>
           <p className="text-gray-600">{user.sdt}</p>
         </div>
+
+        {/* ----- MỚI: Thêm trạng thái cho mobile ----- */}
+        <div>
+          <span className="font-medium text-gray-700">Trạng thái:</span>
+          <p className="text-gray-600">
+            {user.is_active ? (
+              <span className="text-green-700 font-medium">Kích hoạt</span>
+            ) : (
+              <span className="text-red-700 font-medium">Vô hiệu hóa</span>
+            )}
+          </p>
+        </div>
+        {/* ----- KẾT THÚC ----- */}
+
       </div>
     </div>
   );
@@ -169,7 +185,7 @@ export default function UserManagement() {
       )}
       {/* Bộ lọc - Bỏ sticky */}
       <div className="w-full sm:w-64">
-        <Select value={selectedPhongBan} onValueChange={setSelectedPhongBan}>
+        <Select value={selectedPhongBan} onValueVChange={setSelectedPhongBan}>
           <SelectTrigger>
             <SelectValue placeholder="Tất cả bộ phận" />
           </SelectTrigger>
@@ -198,6 +214,7 @@ export default function UserManagement() {
                 <div className="text-center py-8 text-gray-500">Không có dữ liệu để hiển thị</div>
               )}
             </div>
+            {/* Desktop Table */}
             <div className="hidden lg:block">
               <div className="overflow-x-auto">
                 <Table className="rounded-lg overflow-hidden border border-gray-200 shadow-sm min-w-full">
@@ -209,6 +226,11 @@ export default function UserManagement() {
                       <TableHead className="text-center font-semibold text-gray-700 whitespace-nowrap">LOẠI TÀI KHOẢN</TableHead>
                       <TableHead className="text-center font-semibold text-gray-700 whitespace-nowrap">BỘ PHẬN</TableHead>
                       <TableHead className="text-center font-semibold text-gray-700 whitespace-nowrap">SỐ ĐIỆN THOẠI</TableHead>
+
+                      {/* ----- MỚI: Thêm cột Trạng thái ----- */}
+                      <TableHead className="text-center font-semibold text-gray-700 whitespace-nowrap">TRẠNG THÁI</TableHead>
+                      {/* ----- KẾT THÚC ----- */}
+
                       <TableHead className="text-center font-semibold text-gray-700 whitespace-nowrap">THAO TÁC</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -223,21 +245,61 @@ export default function UserManagement() {
                           {phong_ban?.find((pb) => pb.id === user.phong_ban_id)?.ten || "Chưa có"}
                         </TableCell>
                         <TableCell className="text-center whitespace-nowrap">{user.sdt}</TableCell>
+
+                        {/* ----- MỚI: Thêm ô Trạng thái (dạng badge) ----- */}
+                        <TableCell className="text-center whitespace-nowrap">
+                          {user.is_active ? (
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              Kích hoạt
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              Vô hiệu hóa
+                            </span>
+                          )}
+                        </TableCell>
+                        {/* ----- KẾT THÚC ----- */}
+
                         <TableCell className="text-center whitespace-nowrap">
                           <div className="flex justify-center items-center gap-2">
                             <Button
                               size="icon"
                               variant="outline"
                               onClick={() => {
-                                if (auth.user.cap === user.cap && auth.user.id !== user.id) {
-                                  alert("Bạn không có quyền sửa tài khoản cùng cấp");
-                                  return;
+                                if (auth.user.cap != 0) {
+                                  if (auth.user.cap === user.cap && auth.user.id !== user.id) {
+                                    alert("Bạn không có quyền sửa tài khoản cùng cấp");
+                                    return;
+                                  }
                                 }
                                 setEditUser(user);
                                 setShowModal(true);
                               }}
                             >
                               <Edit className="h-4 w-4 text-yellow-500" />
+                            </Button>
+
+
+                            <Button
+                              size="icon"
+                              variant="outline"
+                              onClick={async () => {
+                                if (auth.user.cap != 0) {
+                                  if (auth.user.cap === user.cap && auth.user.id !== user.id) {
+                                    alert("Bạn không có quyền xóa tài khoản cùng cấp");
+                                    return;
+                                  }
+                                }
+                                // xác nhận có muốn xóa không
+                                if (window.confirm(`Bạn có chắc chắn muốn xóa tài khoản ${user.ho_ten}?`)) {
+                                  await xoaTaiKhoan(user.id);
+                                  alert("Xóa tài khoản thành công");
+                                  await getUsers();
+                                }
+                              }}
+                            >
+                              {/* ----- SỬA LỖI: Dùng icon Delete và class text-red-500 ----- */}
+                              <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
                           </div>
                         </TableCell>

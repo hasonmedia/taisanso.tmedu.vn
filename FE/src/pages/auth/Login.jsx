@@ -30,17 +30,14 @@ export default function Login() {
   };
 
   const onSubmit = async (e) => {
-    console.log("123")
     e.preventDefault();
     try {
-      console.log(credentials)
       const data = await login(credentials);
-      console.log("123", data)
       const role = data.user.cap;
       alert("Đăng nhập thành công 🎉");
       handleRedirectByRole(role);
     } catch (err) {
-      alert("Sai tài khoản hoặc mật khẩu ❌");
+      alert(err.message || "Đăng nhập thất bại");
       console.error("Login failed:", err);
     }
   };

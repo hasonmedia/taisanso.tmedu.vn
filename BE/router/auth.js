@@ -1,6 +1,12 @@
 const express = require("express");
 const { authentication } = require("../middleware/auth.js");
-const { register, login, logout, update } = require("../controller/auth.js");
+const {
+  register,
+  login,
+  logout,
+  update,
+  deleteAccount,
+} = require("../controller/auth.js");
 const router = express.Router();
 
 /**
@@ -188,5 +194,5 @@ router.post("/logout", authentication, logout);
  *         description: Không tìm thấy tài khoản
  */
 router.patch("/update/:id", authentication, update);
-
+router.delete("/delete/:id", authentication, deleteAccount);
 module.exports = router;
