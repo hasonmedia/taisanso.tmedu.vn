@@ -26,6 +26,7 @@ const LoaiTaiSan = sequelize.define(
   },
   {
     tableName: "loai_tai_san",
+    allowNull: true,
     timestamps: false,
   }
 );

@@ -14,7 +14,10 @@ const addTaiSan = async (req, res) => {
     const newTaiSan = await TaiSan.addTaiSan(req.body, req.user);
     res.status(201).json(newTaiSan);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: error.message,
+      message: "Lỗi khi thêm tài sản",
+    });
   }
 };
 const updateTaiSan = async (req, res) => {

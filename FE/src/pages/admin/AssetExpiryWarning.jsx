@@ -23,11 +23,11 @@ export default function AssetExpiryWarning() {
 
     // Danh sách email mặc định
     const defaultEmails = [
-        { id: '1', email: 'Hcns@tmedu.vn', ho_ten: 'Phòng Hành chính nhân sự', cap: 2 },
-        { id: '2', email: 'Thaont@tmedu.vn', ho_ten: 'Thaont', cap: 2 },
-        { id: '3', email: 'Bantruyenthong@tmedu.vn', ho_ten: 'Ban truyền thông', cap: 2 },
-        { id: '4', email: 'Mkt@tmedu.vn', ho_ten: 'Phòng Marketing', cap: 2 },
-        { id: '5', email: 'Admin@tmedu.vn', ho_ten: 'Quản trị viên hệ thống', cap: 1 }
+        // { id: '1', email: 'Hcns@tmedu.vn', ho_ten: 'Phòng Hành chính nhân sự', cap: 0 },
+        // { id: '2', email: 'Thaont@tmedu.vn', ho_ten: 'Thaont', cap: 2 },
+        // { id: '3', email: 'Bantruyenthong@tmedu.vn', ho_ten: 'Ban truyền thông', cap: 2 },
+        // { id: '4', email: 'Mkt@tmedu.vn', ho_ten: 'Phòng Marketing', cap: 2 },
+        // { id: '5', email: 'Admin@tmedu.vn', ho_ten: 'Quản trị viên hệ thống', cap: 1 }
     ];
 
     useEffect(() => {

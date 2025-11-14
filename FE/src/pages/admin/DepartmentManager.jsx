@@ -11,7 +11,11 @@ function DepartmentManager() {
     useEffect(() => {
         department.getAllDepartment();
     }, []);
-
+    const handleDelete = (id) => {
+        if (window.confirm("Bạn có chắc chắn muốn xóa phòng ban này?")) {
+            department.deleteDepartment(id);
+        }
+    };
     return (
         <div className="p-3 sm:p-6 bg-gray-50 min-h-screen">
             <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-gray-800">
@@ -80,7 +84,7 @@ function DepartmentManager() {
                                             Sửa
                                         </button>
                                         <button
-                                            onClick={() => department.deleteDepartment(dept.id)}
+                                            onClick={() => handleDelete(dept.id)}
                                             className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
                                         >
                                             Xóa
@@ -136,37 +140,35 @@ function DepartmentManager() {
                         <h3 className="text-lg font-bold mb-4 text-gray-800">
                             Sửa phòng ban
                         </h3>
-                        <input
-                            type="text"
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                            className="border border-gray-300 p-2 sm:p-3 w-full rounded-md mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="Tên phòng ban..."
-                        />
-                        <div className="flex flex-col sm:flex-row justify-end gap-2">
-                            <button
-                                onClick={() => setEditDept(null)}
-                                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                onClick={async () => {
-                                    await department.updateDepartment(editDept.id, {
-                                        ...editDept,
-                                        ten: editName,
-                                    });
-                                    setEditDept(null);
-                                }}
-                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-                            >
-                                Lưu
-                            </button>
-                        </div>
+                        <form
+                            onSubmit={async (e) => {
+                                e.preventDefault(); // ngăn reload trang
+                                await department.updateDepartment(editDept.id, {
+                                    ...editDept,
+                                    ten: editName,
+                                });
+                                setEditDept(null);
+                            }}
+                        >
+                            <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)}
+                                className="border border-gray-300 p-2 sm:p-3 w-full rounded-md mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder="Tên phòng ban..." required />
+                            <div className="flex flex-col sm:flex-row justify-end gap-2">
+                                <button onClick={() => setEditDept(null)} className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors" > Hủy </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                                >
+                                    Lưu
+                                </button>
+
+                            </div>
+                        </form>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
 

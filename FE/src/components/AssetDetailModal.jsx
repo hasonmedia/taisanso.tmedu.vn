@@ -95,7 +95,9 @@ const AssetDetailModal = ({ selectedItem, onClose, onSave }) => {
                                                text-gray-700 text-sm sm:text-base
                                                focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
                                                focus:outline-none transition-colors"
-                                    placeholder={key === "password" ? "Nhập mật khẩu mới" : ""}
+                                    placeholder={key === "password" ? "Nhập mật khẩu mới" : ""
+                                    }
+                                    required
                                 />
                             </div>
                         ))}

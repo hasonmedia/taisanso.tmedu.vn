@@ -44,7 +44,7 @@ const addLoaiTaiSanController = async (req, res) => {
     if (!danhMucTaiSanId) {
       return res.status(400).json({
         success: false,
-        message: "Danh mục tài sản là bắt buộc",
+        message: "Không được để trống danh mục tài sản",
       });
     }
 

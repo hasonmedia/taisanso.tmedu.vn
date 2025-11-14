@@ -88,7 +88,6 @@ export default function EditAssetModal({ asset, dataCategory, onClose }) {
       const response = await updateAsset(asset.id, finalData);
       if (response) {
         setSuccessMessage("✅ Cập nhật thành công!");
-        // Clear new field after successful update
         setNewField({ key: "", value: "" });
       }
     } catch (error) {
@@ -218,6 +217,7 @@ export default function EditAssetModal({ asset, dataCategory, onClose }) {
                            focus:outline-none transition-colors
                            disabled:bg-gray-100 disabled:text-gray-500"
                 disabled={isSubmitting}
+                required
               />
             </div>
             <div>
@@ -232,6 +232,7 @@ export default function EditAssetModal({ asset, dataCategory, onClose }) {
                            focus:outline-none transition-colors
                            disabled:bg-gray-100 disabled:text-gray-500"
                 disabled={isSubmitting}
+                required
               />
             </div>
           </div>

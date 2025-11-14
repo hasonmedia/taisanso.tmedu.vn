@@ -132,6 +132,7 @@ const addTaiSan = async (data, user) => {
     return newTaiSan;
   } catch (error) {
     console.log("Lỗi khi thêm tài sản:", error);
+    throw error;
   }
 };
 const updateTaiSan = async (id, data, user) => {

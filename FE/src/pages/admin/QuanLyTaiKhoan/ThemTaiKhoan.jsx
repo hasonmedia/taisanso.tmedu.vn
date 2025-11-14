@@ -88,7 +88,7 @@ export default function ThemTaiKhoan({
         setFormData((prev) => ({
             ...prev,
             [name]:
-                type === "checkbox" // <-- Xử lý cho toggle/checkbox
+                type === "checkbox"
                     ? checked
                     : name === "cap" || name === "PhongBanId"
                         ? Number(value) || 0
@@ -102,7 +102,6 @@ export default function ThemTaiKhoan({
     };
 
     const validateForm = () => {
-        // ... (validation logic không đổi)
         const newErrors = {};
 
         if (!formData.username.trim()) {
@@ -179,6 +178,7 @@ export default function ThemTaiKhoan({
                                 ? 'border-red-300 focus:ring-red-500'
                                 : 'border-gray-300 focus:ring-blue-500'
                                 }`}
+                            required
                         />
                         {errors.m_s_n_v && ( // <-- Sửa lỗi: dùng m_s_n_v
                             <p className="text-red-500 text-xs">{errors.m_s_n_v}</p>
@@ -202,6 +202,7 @@ export default function ThemTaiKhoan({
                                 ? 'border-red-300 focus:ring-red-500'
                                 : 'border-gray-300 focus:ring-blue-500'
                                 }`}
+                            required
                         />
                         {errors.username && (
                             <p className="text-red-500 text-xs">{errors.username}</p>
@@ -226,6 +227,7 @@ export default function ThemTaiKhoan({
                                     ? 'border-red-300 focus:ring-red-500'
                                     : 'border-gray-300 focus:ring-blue-500'
                                     }`}
+                                required={!editUser}
                             />
                             <button
                                 type="button"
@@ -257,6 +259,7 @@ export default function ThemTaiKhoan({
                                 ? 'border-red-300 focus:ring-red-500'
                                 : 'border-gray-300 focus:ring-blue-500'
                                 }`}
+                            required
                         />
                         {errors.ho_ten && (
                             <p className="text-red-500 text-xs">{errors.ho_ten}</p>
@@ -280,6 +283,7 @@ export default function ThemTaiKhoan({
                                 ? 'border-red-300 focus:ring-red-500'
                                 : 'border-gray-300 focus:ring-blue-500'
                                 }`}
+                            required
                         />
                         {errors.sdt && (
                             <p className="text-red-500 text-xs">{errors.sdt}</p>
@@ -322,7 +326,6 @@ export default function ThemTaiKhoan({
                             </span>
                         </div>
                     </div>
-                    {/* ----- KẾT THÚC ----- */}
 
 
                     {/* Two column layout for Cap and Phong ban on larger screens */}
@@ -372,7 +375,6 @@ export default function ThemTaiKhoan({
 
                 {/* Footer */}
                 <div className="sticky bottom-0 bg-gray-50 px-4 sm:px-6 py-4 rounded-b-xl border-t border-gray-200">
-                    {/* ... (Footer content không đổi) */}
                     <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
                         <button
                             type="button"
