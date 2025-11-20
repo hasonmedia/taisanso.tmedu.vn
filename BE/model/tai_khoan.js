@@ -31,7 +31,6 @@ const TaiKhoan = sequelize.define(
     email: {
       type: DataTypes.STRING(255),
       allowNull: true,
-      unique: true,
       validate: {
         isEmail: true,
       },
