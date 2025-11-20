@@ -7,6 +7,7 @@ import {
     Phone,
     Building,
     Hash,
+    Mail,
     Activity, // <-- Thêm icon mới
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -22,6 +23,7 @@ export default function ThemTaiKhoan({
     const user = useAuth();
     // Thêm vào state ban đầu
     const [formData, setFormData] = useState({
+        email: "",
         username: "",
         password: "",
         ho_ten: "",
@@ -53,10 +55,11 @@ export default function ThemTaiKhoan({
             return false; // cấp 3 không chọn gì khác
         });
     }, [user?.user]); // Phụ thuộc vào user
-
+    console.log("Available Options:", editUser, availableOptions);
     useEffect(() => {
         if (editUser) {
             setFormData({
+                email: editUser.email || "",
                 username: editUser.username || "",
                 password: "",
                 ho_ten: editUser.ho_ten || "",
@@ -69,6 +72,7 @@ export default function ThemTaiKhoan({
         } else if (showModal) {
             // Reset form
             setFormData({
+                email: "",
                 username: "",
                 password: "",
                 ho_ten: "",
@@ -103,6 +107,9 @@ export default function ThemTaiKhoan({
 
     const validateForm = () => {
         const newErrors = {};
+        if (!formData.email.trim()) {
+            newErrors.email = "Email không được để trống";
+        }
 
         if (!formData.username.trim()) {
             newErrors.username = "Username không được để trống";
@@ -142,14 +149,12 @@ export default function ThemTaiKhoan({
     };
 
     if (!showModal) return null;
-    // console.log("123", user) // Logic `availableOptions` đã được chuyển lên trên
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 mb-0">
             <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
                 {/* Header */}
                 <div className="sticky top-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-4 rounded-t-xl">
-                    {/* ... (Header content không đổi) */}
                     <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                         {editUser ? "Cập nhật tài khoản" : "Thêm tài khoản"}
                     </h2>
@@ -160,7 +165,6 @@ export default function ThemTaiKhoan({
 
                 {/* Form */}
                 <div className="px-4 sm:px-6 py-4 space-y-4 sm:space-y-5">
-                    {/* ... (Mã số nhân viên, Username, Password, Họ tên, Số điện thoại không đổi) ... */}
                     {/* Mã số nhân viên */}
                     <div className="space-y-2">
                         <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
@@ -182,6 +186,28 @@ export default function ThemTaiKhoan({
                         />
                         {errors.m_s_n_v && ( // <-- Sửa lỗi: dùng m_s_n_v
                             <p className="text-red-500 text-xs">{errors.m_s_n_v}</p>
+                        )}
+                    </div>
+                    <div className="space-y-2">
+                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <Mail className="w-4 h-4 text-gray-500" />
+                            Email
+                            <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Nhập email"
+                            className={`w-full px-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors ${errors.username
+                                ? 'border-red-300 focus:ring-red-500'
+                                : 'border-gray-300 focus:ring-blue-500'
+                                }`}
+                            required
+                        />
+                        {errors.email && (
+                            <p className="text-red-500 text-xs">{errors.email}</p>
                         )}
                     </div>
 

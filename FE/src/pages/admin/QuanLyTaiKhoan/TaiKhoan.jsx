@@ -88,7 +88,6 @@ export default function UserManagement() {
   const filteredUsers = dataLevel1.filter(
     (user) => selectedPhongBan === "all" || user.phong_ban_id === Number(selectedPhongBan)
   );
-
   // Mobile card component for better mobile experience
   const MobileUserCard = ({ user }) => (
     <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4 shadow-sm">
@@ -220,12 +219,10 @@ export default function UserManagement() {
                 <Table className="rounded-lg overflow-hidden border border-gray-200 shadow-sm min-w-full">
                   <TableHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
                     <TableRow>
-                      <TableHead className="text-left font-semibold text-gray-700 whitespace-nowrap">MÃ NV</TableHead>
                       <TableHead className="text-left font-semibold text-gray-700 whitespace-nowrap">TÀI KHOẢN</TableHead>
                       <TableHead className="text-left font-semibold text-gray-700 whitespace-nowrap">HỌ VÀ TÊN</TableHead>
                       <TableHead className="text-center font-semibold text-gray-700 whitespace-nowrap">LOẠI TÀI KHOẢN</TableHead>
                       <TableHead className="text-center font-semibold text-gray-700 whitespace-nowrap">BỘ PHẬN</TableHead>
-                      <TableHead className="text-center font-semibold text-gray-700 whitespace-nowrap">SỐ ĐIỆN THOẠI</TableHead>
 
                       {/* ----- MỚI: Thêm cột Trạng thái ----- */}
                       <TableHead className="text-center font-semibold text-gray-700 whitespace-nowrap">TRẠNG THÁI</TableHead>
@@ -237,14 +234,12 @@ export default function UserManagement() {
                   <TableBody>
                     {filteredUsers.map((user) => (
                       <TableRow key={user.id} className="hover:bg-blue-50 transition-colors even:bg-gray-50">
-                        <TableCell className="whitespace-nowrap">{user.m_s_n_v}</TableCell>
                         <TableCell className="whitespace-nowrap">{user.username}</TableCell>
                         <TableCell className="whitespace-nowrap">{user.ho_ten}</TableCell>
                         <TableCell className="text-center whitespace-nowrap">{capToLetter(user.cap) || "—"}</TableCell>
                         <TableCell className="text-center whitespace-nowrap">
                           {phong_ban?.find((pb) => pb.id === user.phong_ban_id)?.ten || "Chưa có"}
                         </TableCell>
-                        <TableCell className="text-center whitespace-nowrap">{user.sdt}</TableCell>
 
                         {/* ----- MỚI: Thêm ô Trạng thái (dạng badge) ----- */}
                         <TableCell className="text-center whitespace-nowrap">
@@ -298,7 +293,6 @@ export default function UserManagement() {
                                 }
                               }}
                             >
-                              {/* ----- SỬA LỖI: Dùng icon Delete và class text-red-500 ----- */}
                               <Trash2 className="h-4 w-4 text-red-500" />
                             </Button>
                           </div>

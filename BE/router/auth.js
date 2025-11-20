@@ -6,6 +6,9 @@ const {
   logout,
   update,
   deleteAccount,
+  forgotPasswordController,
+  resetPasswordController,
+  verifyTokenController,
 } = require("../controller/auth.js");
 const router = express.Router();
 
@@ -195,4 +198,8 @@ router.post("/logout", authentication, logout);
  */
 router.patch("/update/:id", authentication, update);
 router.delete("/delete/:id", authentication, deleteAccount);
+
+router.post("/forgot-password", forgotPasswordController);
+router.post("/reset-password", resetPasswordController);
+router.get("/verify-token/:token", verifyTokenController);
 module.exports = router;

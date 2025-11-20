@@ -1,7 +1,6 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { TaiKhoan } = require("../model/tai_khoan");
-const { sequelize } = require("../config/database");
 const { PhongBan } = require("../model/phong_ban");
 const { ChiTietHanhDong } = require("../model/chi_tiet_hanh_dong");
 
@@ -39,23 +38,62 @@ const registerUser = async (data, user) => {
 
 const loginUser = async (data) => {
   try {
-    let user = await TaiKhoan.findOne({
-      where: {
-        username: data.username,
-      },
-    });
+    const NOW = Date.now(); // thời điểm hiện tại
+    const user = await TaiKhoan.findOne({ where: { username: data.username } });
+
     if (!user) {
-      return -1;
-    } else {
-      const check = await bcrypt.compare(data.password, user.password);
-      if (!check) {
-        return -2;
+      return { code: -1, message: "Tài khoản không tồn tại" };
+    }
+
+    if (user.is_active === false) {
+      return {
+        code: -3,
+        message: "Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên",
+      };
+    }
+
+    // Reset failed attempts nếu đã quá 1 giờ
+    if (
+      user.first_failed_at &&
+      NOW - user.first_failed_at.getTime() > 60 * 60 * 1000
+    ) {
+      user.failed_attempts = 0;
+      user.first_failed_at = null;
+      await user.save();
+    }
+
+    const check = await bcrypt.compare(data.password, user.password);
+
+    if (!check) {
+      // Sai mật khẩu
+      if (!user.first_failed_at) {
+        user.first_failed_at = new Date(NOW);
+        user.failed_attempts = 1;
       } else {
-        if (!user.is_active) {
-          return -3;
-        }
-        return user;
+        user.failed_attempts += 1;
       }
+
+      let remainingAttempts = Math.max(5 - user.failed_attempts, 0);
+
+      if (user.failed_attempts >= 5) {
+        user.is_active = false;
+        await user.save();
+        return {
+          code: -3,
+          message: "Tài khoản bị khóa tạm thời do nhập sai quá nhiều lần",
+        };
+      }
+
+      await user.save();
+      return { code: -2, remainingAttempts }; // trả thêm số lần còn lại
+    } else {
+      // Đúng mật khẩu
+      // Reset failed attempts
+      user.failed_attempts = 0;
+      user.first_failed_at = null;
+      await user.save();
+
+      return user;
     }
   } catch (error) {
     console.log(error);
@@ -76,7 +114,6 @@ const updateTaiKhoan = async (id, data, user) => {
   try {
     const tai_khoan = await TaiKhoan.findByPk(id);
     if (user.cap != 0) {
-      // Kiểm tra quyền sửa tài khoản
       if (user.id !== tai_khoan.id && user.cap === tai_khoan.cap) {
         throw new Error("Bạn không có quyền sửa tài khoản cùng cấp");
       }
@@ -84,10 +121,8 @@ const updateTaiKhoan = async (id, data, user) => {
 
     const oldPhongBanId = tai_khoan.PhongBanId;
 
-    // Cập nhật tất cả dữ liệu trong data trực tiếp (bao gồm password nếu có)
     await tai_khoan.update(data);
 
-    // Reload instance để chắc chắn dữ liệu mới nhất
     await tai_khoan.reload();
 
     // Nếu đổi phòng ban thì cập nhật số lượng nhân viên
@@ -118,7 +153,7 @@ const updateTaiKhoan = async (id, data, user) => {
 
     return tai_khoan;
   } catch (error) {
-    console.log(error);
+    throw error;
   }
 };
 
@@ -132,7 +167,6 @@ const deleteTaiKhoan = async (id, user) => {
     }
     await tai_khoan.destroy();
 
-    // Cập nhật số lượng nhân viên trong phòng ban
     const soLuong = await TaiKhoan.count({
       where: { PhongBanId: tai_khoan.PhongBanId },
     });
@@ -148,6 +182,7 @@ const deleteTaiKhoan = async (id, user) => {
     await ChiTietHanhDong.create(value);
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };
 

@@ -57,7 +57,7 @@ export default function AssetModal({ setIsModalOpen }) {
       { field: "categorySelected", value: categorySelected, message: "Vui lòng chọn danh mục tài sản" },
       { field: "supplierSelected", value: supplierSelected, message: "Vui lòng chọn nhà cung cấp" },
       { field: "ngayDangKy", value: ngayDangKy, message: "Ngày đăng ký không được để trống" },
-      { field: "ngayHetHan", value: ngayHetHan, message: "Ngày hết hạn không được để trống" },
+      // { field: "ngayHetHan", value: ngayHetHan, message: "Ngày hết hạn không được để trống" },
     ];
 
     requiredFields.forEach(({ field, value, message }) => {
@@ -245,7 +245,7 @@ export default function AssetModal({ setIsModalOpen }) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
-                Ngày hết hạn<span className="text-red-500">*</span>
+                Ngày hết hạn
               </label>
               <input
                 name="ngay_het_han"

@@ -1,13 +1,18 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import SSOLogin from "../../components/SSOLogin";
+// Import icon cho SSO (giả định sử dụng React Icons, ví dụ: FaGoogle)
+import { FaExternalLinkAlt } from "react-icons/fa";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, loading } = useAuth();
+  // Giả định AuthContext có thêm loginWithSSO
+  const { login, loginWithSSO, loading } = useAuth();
   const [credentials, setCredentials] = useState({ username: "", password: "" });
+  const [ssoEmail, setSsoEmail] = useState("");
+  // 1. Thêm state để quản lý thông báo
+  const [notification, setNotification] = useState({ message: "", type: "" }); // type: 'success' hoặc 'error'
 
   const handleRedirectByRole = (role) => {
     switch (role) {
@@ -31,16 +36,80 @@ export default function Login() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    // Xóa thông báo cũ khi submit
+    setNotification({ message: "", type: "" });
     try {
+      // ⚠️ Đảm bảo hàm login trả về đối tượng có thuộc tính user.cap
       const data = await login(credentials);
       const role = data.user.cap;
-      alert("Đăng nhập thành công 🎉");
-      handleRedirectByRole(role);
+
+      // 2. Thay vì alert, set state thông báo thành công
+      setNotification({ message: "Đăng nhập thành công 🎉", type: "success" });
+
+      // Thêm một khoảng trễ nhỏ để người dùng kịp thấy thông báo trước khi chuyển trang
+      setTimeout(() => {
+        handleRedirectByRole(role);
+      }, 1500); // 1.5 giây
+
     } catch (err) {
-      alert(err.message || "Đăng nhập thất bại");
+      // 3. Thay vì alert, set state thông báo lỗi
+      setNotification({
+        message: err.message || "Đăng nhập thất bại",
+        type: "error",
+      });
       console.error("Login failed:", err);
     }
   };
+
+  const handleSSOLogin = async () => {
+    setNotification({ message: "", type: "" });
+
+    if (!ssoEmail.includes('@')) {
+      setNotification({
+        message: "Vui lòng nhập email công ty hợp lệ để dùng SSO.",
+        type: "error",
+      });
+      return;
+    }
+
+    try {
+      // ⚠️ Gửi email đến Backend để khởi tạo luồng SSO (IdP Discovery)
+      await loginWithSSO(ssoEmail);
+
+      // Lưu ý: Nếu loginWithSSO thành công, Backend của bạn sẽ gửi lệnh 
+      // Redirect (HTTP 302) và trình duyệt sẽ tự động chuyển trang.
+      // Dòng code dưới đây chỉ chạy nếu API gọi bị lỗi hoặc trả về JSON (không phải redirect).
+
+      // Nếu BE không redirect, bạn có thể xử lý thành công như sau (ít phổ biến):
+      // const role = data.user.cap;
+      // setNotification({ message: "Đăng nhập SSO thành công 🎉", type: "success" });
+      // setTimeout(() => { handleRedirectByRole(role); }, 1500);
+
+    } catch (err) {
+      // Bắt lỗi nếu Backend không tìm thấy kết nối SSO cho domain này hoặc lỗi server
+      setNotification({
+        message: err.message || "Không thể khởi tạo SSO. Vui lòng kiểm tra email.",
+        type: "error",
+      });
+      console.error("SSO Login failed:", err);
+    }
+  };
+  // 4. (UX Cải tiến) Hàm xử lý khi gõ input, sẽ xóa thông báo lỗi/thành công
+  const handleChange = (e) => {
+    const { id, value } = e.target;
+
+    if (id === 'ssoEmail') {
+      setSsoEmail(value.trim());
+    }
+    else {
+      setCredentials({ ...credentials, [id]: value.trim() });
+    }
+    // Nếu đang có thông báo, hãy xóa nó đi khi người dùng bắt đầu gõ lại
+    if (notification.message) {
+      setNotification({ message: "", type: "" });
+    }
+  };
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300">
@@ -52,13 +121,13 @@ export default function Login() {
           Đăng nhập
         </h2>
 
+        {/* --- Form Đăng nhập thường --- */}
+
         <input
           id="username"
           type="text"
           value={credentials.username}
-          onChange={(e) =>
-            setCredentials({ ...credentials, username: e.target.value })
-          }
+          onChange={handleChange} // Sử dụng hàm handleChange mới
           placeholder="Tên đăng nhập"
           required
           className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -68,13 +137,23 @@ export default function Login() {
           id="password"
           type="password"
           value={credentials.password}
-          onChange={(e) =>
-            setCredentials({ ...credentials, password: e.target.value })
-          }
+          onChange={handleChange} // Sử dụng hàm handleChange mới
           placeholder="Mật khẩu"
           required
           className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
         />
+
+        {/* 5. Vị trí hiển thị thông báo (ngay trên nút đăng nhập) */}
+        {notification.message && (
+          <div
+            className={`p-3 rounded-lg text-center font-medium ${notification.type === 'success'
+              ? 'bg-green-100 text-green-700' // Style cho thành công
+              : 'bg-red-100 text-red-700'     // Style cho lỗi
+              }`}
+          >
+            {notification.message}
+          </div>
+        )}
 
         <button
           type="submit"
@@ -87,7 +166,19 @@ export default function Login() {
         >
           {loading ? "Đang đăng nhập..." : "Đăng nhập"}
         </button>
+
+        <div className="text-center mt-4">
+          <Link
+            to="/forgot-password"
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+          >
+            Quên mật khẩu?
+          </Link>
+        </div>
       </form>
+
+      {/* SSO Login Component */}
+      {/* <SSOLogin /> */}
     </div>
   );
 }

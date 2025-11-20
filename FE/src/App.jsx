@@ -1,4 +1,7 @@
 import Login from "../src/pages/auth/Login";
+import ForgotPassword from "../src/pages/auth/ForgotPassword";
+import ResetPassword from "../src/pages/auth/ResetPassword";
+import SimpleResetPassword from "../src/pages/auth/SimpleResetPassword";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "./context/ProtectedRoute.jsx";
 import RootLayout from "../src/components/root/RootLayout"
@@ -30,11 +33,16 @@ import AssetLoginInfo from "../src/pages/admin/AssetLoginInfo";
 import DepartmentManager from "./pages/admin/DepartmentManager";
 import AssetList from "./pages/admin/AssetList";
 import AssetExpiryWarning from "./pages/admin/AssetExpiryWarning";
+import SSOCallback from "./pages/auth/SSOCallback";
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/simple-reset" element={<SimpleResetPassword />} />
       <Route path="/" element={<Login />} />
+      <Route path="/api/sso/callback" element={<SSOCallback />} />
       <Route
         path="/user-guide"
         element={

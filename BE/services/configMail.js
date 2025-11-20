@@ -1,7 +1,7 @@
 const sendMail = require("../config/sendMail");
 const { sequelize } = require("../config/database");
 const MailService = require("../services/nhan_mail");
-
+const { getTaiSanSapHetHan } = require("../services/tai_san");
 const mailThongBaoHetHan = async () => {
   try {
     const sql = `SELECT

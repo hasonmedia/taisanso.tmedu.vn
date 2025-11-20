@@ -1904,6 +1904,11 @@ adminRouter.post("/thong_bao", authentication, requireRole(2), addThongBao);
  *       404:
  *         description: Không tìm thấy thông tin user
  */
-adminRouter.get("/me", authentication, requireRole(3), getMe);
-
+adminRouter.get("/me", authentication, requireRole([0, 1, 2, 3]), getMe);
+adminRouter.get(
+  "/gui-mail-tai-san",
+  authentication,
+  requireRole(1),
+  mailThongBaoTaiSanHetHanController
+);
 module.exports = adminRouter;

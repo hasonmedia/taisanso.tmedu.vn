@@ -1,30 +1,28 @@
 const nodemailer = require("nodemailer");
 
-
 const sendMail = async (options) => {
-    const transporter = nodemailer.createTransport({
-        host: process.env.SMPT_HOST,
-        port: process.env.SMPT_PORT,
-        // service: process.env.SMPT_SERVICE,
-        auth: {
-            user: process.env.SMPT_MAIL,
-            pass: process.env.SMPT_PASSWORD,
-        },
-        secure: false
-    });
-    const expiry = new Date(options.expiryDate).toLocaleString("vi-VN", {
-        timeZone: "Asia/Ho_Chi_Minh",
-        hour12: false,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit"
-    });
-    let data_html=''
-    if (options.email_nv) {
-        console.log("nv ", options.email_nv)
-        data_html =  `
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMPT_HOST,
+    port: parseInt(process.env.SMPT_PORT),
+    service: process.env.SMPT_SERVICE,
+    auth: {
+      user: process.env.SMPT_MAIL,
+      pass: process.env.SMPT_PASSWORD,
+    },
+    secure: process.env.SMPT_PORT == 465, // true for 465, false for other ports
+  });
+  const expiry = new Date(options.expiryDate).toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  let data_html = "";
+  if (options.email_nv) {
+    data_html = `
             <div style="font-family: Arial, sans-serif; line-height: 1.6;">
                 <h2 style="color: #d9534f;">⚠️ Thông báo hết hạn tài sản</h2>
                 <p>Kính gửi <b>${options.ten_quan_ly}</b>,</p>
@@ -64,16 +62,27 @@ const sendMail = async (options) => {
                     Đây là email tự động, vui lòng không trả lời.
                 </p>
             </div>
-        `
-    }
-    else if (options.email_ql) {
-        console.log("ql ", options.email_ql);
-        data_html = options.html
-    }
-    else 
-    {
-        console.log("email ", options.email)
-        data_html = `
+        `;
+  } else if (options.email_ql) {
+    console.log("ql ", options.email_ql);
+    data_html = options.html;
+  } else if (options.email_forgot) {
+    data_html = `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+                <h2 style="color: #d9534f;">🔐 Yêu cầu đặt lại mật khẩu</h2>
+                <p>Xin chào <b>${options.name}</b>,</p>
+                <p>Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản của mình. Vui lòng nhấp vào liên kết bên dưới để đặt lại mật khẩu:</p>
+                <p><a href="${options.resetLink}" style="color: #007bff;">Đặt lại mật khẩu</a></p>
+                <p>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.</p>
+                <p style="margin-top: 20px;">Trân trọng,<br/>Phòng Hỗ trợ Kỹ thuật</p>
+                <hr/>
+                <p style="font-size: 12px; color: #666;">
+                    Đây là email tự động, vui lòng không trả lời.
+                </p>
+            </div>
+        `;
+  } else {
+    data_html = `
             <div style="font-family: Arial, sans-serif; line-height: 1.6;">
                 <h2 style="color: #d9534f;">⚠️ Thông báo hết hạn tài sản</h2>
                 <p>Xin chào <b>${options.name}</b>,</p>
@@ -91,16 +100,21 @@ const sendMail = async (options) => {
                     Đây là email tự động, vui lòng không trả lời.
                 </p>
             </div>
-        `
-    }
-    const mailOptions = {
-        from: process.env.SMPT_MAIL,
-        to: options.email,
-        subject: "Thông báo hết hạn tài sản số",
-        html: data_html
-    };
+        `;
+  }
+  let subject = "Thông báo hết hạn tài sản số";
+  if (options.email_forgot) {
+    subject = "Quên mật khẩu - Đặt lại mật khẩu";
+  }
 
-    await transporter.sendMail(mailOptions);
+  const mailOptions = {
+    from: process.env.SMPT_MAIL,
+    to: options.email,
+    subject: subject,
+    html: data_html,
+  };
+
+  await transporter.sendMail(mailOptions);
 };
 
 module.exports = sendMail;

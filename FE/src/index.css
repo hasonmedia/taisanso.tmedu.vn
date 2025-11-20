@@ -40,7 +40,12 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
-
+.form-submitted input:invalid {
+  border-color: rgb(239 68 68);
+  --tw-ring-color: rgb(254 202 202);
+  box-shadow: 0 0 0 2px var(--tw-ring-color);
+  outline: none;
+}
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

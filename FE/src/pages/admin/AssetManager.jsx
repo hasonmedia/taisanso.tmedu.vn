@@ -4,8 +4,6 @@ import { toast } from "react-toastify";
 import AssetModal from "../../components/AssetModal";
 import EditAssetModal from "../../components/EditAssetModal";
 import ViewAssetModal from "../../components/ViewAssetModal";
-import SupplierSelect from "../../components/SupplierSelect";
-import LoaiTaiSanSelect from "../../components/LoaiTaiSanSelect";
 import { AssetStore } from "../../stores/asset";
 import { ThuongHieuStore } from "../../stores/thuonghieu";
 import { SupplierStore } from "../../stores/supplier";
@@ -474,19 +472,19 @@ export default function AssetManager() {
                 <Table className="min-w-full table-fixed">
                   <TableHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
                     <TableRow>
-                      <TableHead className="text-left font-semibold text-gray-700 px-4 py-4 w-[25%]">
+                      <TableHead className="text-left font-semibold text-gray-700 px-4 py-4 w-[20%]">
                         TÀI SẢN
                       </TableHead>
                       <TableHead className="text-center font-semibold text-gray-700 px-4 py-4 w-[10%]">
                         DANH MỤC
                       </TableHead>
-                      <TableHead className="text-center font-semibold text-gray-700 px-4 py-4 w-[35%]">
+                      <TableHead className="text-left font-semibold text-gray-700 px-4 py-4 w-[30%]">
                         THÔNG TIN
                       </TableHead>
-                      <TableHead className="text-center font-semibold text-gray-700 px-4 py-4 w-[25%]">
+                      <TableHead className="text-center font-semibold text-gray-700 px-4 py-4 w-[15%]">
                         NGÀY ĐĂNG KÝ
                       </TableHead>
-                      <TableHead className="text-center font-semibold text-gray-700 px-4 py-4 w-[25%]">
+                      <TableHead className="text-center font-semibold text-gray-700 px-4 py-4 w-[15%]">
                         NGÀY HẾT HẠN
                       </TableHead>
                       <TableHead className="text-center font-semibold text-gray-700 px-4 py-4 w-[10%]">
@@ -501,7 +499,7 @@ export default function AssetManager() {
                         className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
                           }`}
                       >
-                        <TableCell className="px-4 py-4 w-[25%]">
+                        <TableCell className="px-4 py-4 w-[20%]">
                           <div className="font-medium text-gray-900 text-sm line-clamp-2 break-words">
                             {item.ten_tai_san}
                           </div>
@@ -509,34 +507,50 @@ export default function AssetManager() {
                             {item.ten_nha_cung_cap}
                           </div>
                         </TableCell>
-                        <TableCell className="text-center px-4 py-4 w-[10%]">
-                          <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-sm whitespace-nowrap inline-block">
-                            {categories.find((c) => c.id === item.danh_muc_tai_san_id)?.ten ||
-                              "N/A"}
+                        <TableCell className="text-center px-4 py-4 w-[10%] align-top">
+                          <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs whitespace-nowrap inline-block font-medium">
+                            {categories.find((c) => c.id === item.danh_muc_tai_san_id)
+                              ?.ten || "N/A"}
                           </span>
                         </TableCell>
-                        <TableCell className="text-center px-4 py-4 w-[35%]">
-                          <div className="space-y-1 p-2 bg-gray-50 rounded text-sm">
-                            {item.thong_tin &&
-                              Object.entries(item.thong_tin).map(([key, value]) => (
-                                <div key={key} className="flex flex-col">
-                                  <span className="font-semibold text-gray-700">{key}:</span>
-                                  <span className="text-gray-600">{String(value)}</span>
+                        {/* Sửa đổi quan trọng ở đây: Cố định chiều cao và thêm cuộn */}
+                        <TableCell className="text-left align-top px-4 py-2 w-[30%]">
+                          <div className="space-y-1 p-2 bg-gray-50 rounded text-sm max-h-20 overflow-y-auto border border-gray-200">
+                            <ul className="list-disc ml-4 space-y-0.5">
+                              {item.thong_tin &&
+                                Object.entries(item.thong_tin).map(([key, value]) => (
+                                  <li key={key} className="text-gray-700">
+                                    <span className="font-semibold text-gray-800">
+                                      {key}:
+                                    </span>
+                                    <span className="ml-1 text-gray-600 break-words">
+                                      {String(value)}
+                                    </span>
+                                  </li>
+                                ))}
+                            </ul>
+                            {/* Trường hợp không có thông tin */}
+                            {(!item.thong_tin ||
+                              Object.keys(item.thong_tin).length === 0) && (
+                                <div className="text-center text-gray-500 italic py-2">
+                                  Không có thông tin chi tiết
                                 </div>
-                              ))}
+                              )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-center px-4 py-4 w-[25%]">
-                          <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-sm whitespace-nowrap inline-block">
-                            {item?.ngay_dang_ky || "Không có thông tin"}
+                        {/* End Sửa đổi */}
+
+                        <TableCell className="text-center px-4 py-4 w-[15%] align-top">
+                          <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs whitespace-nowrap inline-block">
+                            {item?.ngay_dang_ky || "N/A"}
                           </span>
                         </TableCell>
-                        <TableCell className="text-center px-4 py-4 w-[25%]">
-                          <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-sm whitespace-nowrap inline-block">
-                            {item?.ngay_het_han || "Không có thông tin"}
+                        <TableCell className="text-center px-4 py-4 w-[15%] align-top">
+                          <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs whitespace-nowrap inline-block">
+                            {item?.ngay_het_han || "N/A"}
                           </span>
                         </TableCell>
-                        <TableCell className="text-center px-4 py-4 w-[10%]">
+                        <TableCell className="text-center px-4 py-4 w-[10%] align-top">
                           <div className="flex justify-center items-center gap-1">
                             <Button
                               variant="outline"

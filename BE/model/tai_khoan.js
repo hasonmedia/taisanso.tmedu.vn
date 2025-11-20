@@ -28,9 +28,25 @@ const TaiKhoan = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+    email: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: true,
+      validate: {
+        isEmail: true,
+      },
+    },
     is_active: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
+    },
+    failed_attempts: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    first_failed_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
     cap: {
       type: DataTypes.SMALLINT,

@@ -6,13 +6,13 @@ require("dotenv").config();
 
 const authRoutes = require("./router/auth");
 const adminRouter = require("./router/admin");
+const ssoRoutes = require("./router/sso");
 const { connectToDB } = require("./config/database.js");
 const cron = require("node-cron");
 const axios = require("axios");
 const swaggerDocs = require("./config/swagger");
 const app = express();
-
-// CORS options
+const workosConfig = require("./config/ssoConfig");
 const corsOptions = {
   origin: process.env.FRONTEND_URL || "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
@@ -27,13 +27,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use("/api/admin", adminRouter);
 app.use("/api/auth", authRoutes);
-
+app.use("/api/sso", ssoRoutes);
 // Cron jobs
 const setupCronJobs = () => {
   cron.schedule("0 8 * * *", async () => {
     try {
       const res2 = await axios.get("/api/admin/gui-mail-tai-san-het-han");
-      console.log("✅ Gửi mail tài sản hết hạn thành công:", res2.data);
     } catch (err) {
       console.error("❌ Lỗi gửi mail tài sản hết hạn:", err.message);
     }
@@ -86,8 +85,8 @@ const startServer = async () => {
 
     setupCronJobs();
 
-    app.listen(3001, () => {
-      console.log("Server running on port 3001");
+    app.listen(3000, () => {
+      console.log("Server running on port 3000");
     });
   } catch (err) {
     console.error("❌ Failed to start server:", err);

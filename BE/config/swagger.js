@@ -15,7 +15,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:3001/",
+        url: "http://localhost:3000/",
         // url: "http://taisanso_backend:3001/",
         description: "Development Server",
       },

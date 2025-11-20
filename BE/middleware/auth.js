@@ -3,8 +3,15 @@ const jwt = require("jsonwebtoken");
 const authentication = async (req, res, next) => {
   const { token } = req.cookies;
   if (token) {
-    const users = jwt.verify(token, process.env.JWT);
-    req.user = users.user;
+    try {
+      const decoded = jwt.verify(token, process.env.JWT);
+      // Xử lý cả token thường và token SSO
+      req.user = decoded.user || decoded; // Nếu có decoded.user thì dùng, không thì dùng decoded
+      console.log("Decoded user from token:", req.user);
+    } catch (error) {
+      console.error("Token verification failed:", error.message);
+      req.user = null;
+    }
   } else {
     req.user = null;
   }
