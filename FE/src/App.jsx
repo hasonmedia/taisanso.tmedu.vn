@@ -33,7 +33,7 @@ import AssetLoginInfo from "../src/pages/admin/AssetLoginInfo";
 import DepartmentManager from "./pages/admin/DepartmentManager";
 import AssetList from "./pages/admin/AssetList";
 import AssetExpiryWarning from "./pages/admin/AssetExpiryWarning";
-import SSOCallback from "./pages/auth/SSOCallback";
+import SSOCallback from "./pages/auth/SSOCallBack";
 function App() {
   return (
     <Routes>

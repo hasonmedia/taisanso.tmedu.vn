@@ -14,7 +14,7 @@ const swaggerDocs = require("./config/swagger");
 const app = express();
 const workosConfig = require("./config/ssoConfig");
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  origin: process.env.FRONTEND_URL || "http://localhost:3001",
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   credentials: true,
 };
@@ -85,8 +85,8 @@ const startServer = async () => {
 
     setupCronJobs();
 
-    app.listen(3000, () => {
-      console.log("Server running on port 3000");
+    app.listen(3001, () => {
+      console.log("Server running on port 3001");
     });
   } catch (err) {
     console.error("❌ Failed to start server:", err);
