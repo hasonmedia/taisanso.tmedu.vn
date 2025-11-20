@@ -9,7 +9,7 @@ const sendMail = async (options) => {
       user: process.env.SMPT_MAIL,
       pass: process.env.SMPT_PASSWORD,
     },
-    secure: process.env.SMPT_PORT == 465, // true for 465, false for other ports
+    secure: false, // true for 465, false for other ports
   });
   const expiry = new Date(options.expiryDate).toLocaleString("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh",
