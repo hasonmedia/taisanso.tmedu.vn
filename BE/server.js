@@ -32,7 +32,9 @@ app.use("/api/sso", ssoRoutes);
 const setupCronJobs = () => {
   cron.schedule("0 8 * * *", async () => {
     try {
-      const res2 = await axios.get("/api/admin/gui-mail-tai-san-het-han");
+      const res2 = await axios.get(
+        "https://taisanso.tmedu.vn/api/admin/gui-mail-tai-san-het-han"
+      );
     } catch (err) {
       console.error("❌ Lỗi gửi mail tài sản hết hạn:", err.message);
     }
@@ -49,13 +51,17 @@ const setupCronJobs = () => {
 
   cron.schedule("55 9 * * *", async () => {
     try {
-      const urgentCheck = await axios.get("/api/admin/tai_san_sap_het_han");
+      const urgentCheck = await axios.get(
+        "https://taisanso.tmedu.vn/api/admin/tai_san_sap_het_han"
+      );
       const urgentAssets =
         urgentCheck.data.critical?.assets?.filter(
           (asset) => asset.so_ngay_con_lai <= 1
         ) || [];
       if (urgentAssets.length > 0) {
-        const res = await axios.get("/api/admin/gui-mail-tai-san-het-han");
+        const res = await axios.get(
+          "https://taisanso.tmedu.vn/api/admin/gui-mail-tai-san-het-han"
+        );
         console.log(
           `🚨 Gửi mail khẩn cấp cho ${urgentAssets.length} tài sản:`,
           res.data
