@@ -16,7 +16,7 @@ const mailThongBaoHetHanController = async (req, res) => {
 };
 
 const mailThongBaoTaiSanHetHanController = async (req, res) => {
-  const value = await mailThongBaoTaiSanHetHan();
+  const value = await mailThongBaoTaiSanHetHan(req.user);
   if (value == "error") {
     res.status(505).json("Lỗi hệ thống");
   } else {

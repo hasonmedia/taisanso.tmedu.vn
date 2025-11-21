@@ -310,10 +310,10 @@ const generateHtmlForAssetExpiry = (data) => {
     </div>
     `;
 };
-const mailThongBaoTaiSanHetHan = async () => {
+const mailThongBaoTaiSanHetHan = async (user) => {
   try {
     // Gọi API getTaiSanSapHetHan từ services/tai_san.js
-    const expiryData = await getTaiSanSapHetHan({ hanh_dong: "system" });
+    const expiryData = await getTaiSanSapHetHan(user);
 
     // Lấy danh sách email đã cấu hình
     const recipients = await MailService.getAllMails();
