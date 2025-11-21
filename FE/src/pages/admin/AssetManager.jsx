@@ -472,21 +472,32 @@ export default function AssetManager() {
                 <Table className="min-w-full table-fixed">
                   <TableHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
                     <TableRow>
+                      {/* TÀI SẢN: 20% */}
                       <TableHead className="text-left font-semibold text-gray-700 px-4 py-4 w-[20%]">
                         TÀI SẢN
                       </TableHead>
+
+                      {/* DANH MỤC: 15% */}
                       <TableHead className="text-center font-semibold text-gray-700 px-4 py-4 w-[15%]">
                         DANH MỤC
                       </TableHead>
+
+                      {/* THÔNG TIN: 35% */}
                       <TableHead className="text-left font-semibold text-gray-700 px-4 py-4 w-[35%]">
                         THÔNG TIN
                       </TableHead>
+
+                      {/* NGÀY ĐĂNG KÝ: 10% */}
                       <TableHead className="text-center font-semibold text-gray-700 px-4 py-4 w-[10%]">
                         NGÀY ĐĂNG KÝ
                       </TableHead>
+
+                      {/* NGÀY HẾT HẠN: 10% */}
                       <TableHead className="text-center font-semibold text-gray-700 px-4 py-4 w-[10%]">
                         NGÀY HẾT HẠN
                       </TableHead>
+
+                      {/* THAO TÁC: 10% */}
                       <TableHead className="text-center font-semibold text-gray-700 px-4 py-4 w-[10%]">
                         THAO TÁC
                       </TableHead>
@@ -499,20 +510,19 @@ export default function AssetManager() {
                         className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
                           }`}
                       >
-                        {/* START - Ô TÀI SẢN: Đã loại bỏ line-clamp-2 */}
+                        {/* 1. TÀI SẢN - 20% (Cho phép xuống dòng, căn lề trên) */}
                         <TableCell className="px-4 py-4 w-[20%] align-top">
+                          {/* Loại bỏ line-clamp-2 để cho phép xuống dòng */}
                           <div className="font-medium text-gray-900 text-sm break-words">
-                            {/* Loại bỏ line-clamp-2 để cho phép xuống dòng không giới hạn */}
                             {item.ten_tai_san}
                           </div>
+                          {/* Giữ truncate cho tên nhà cung cấp để tránh tràn ngang */}
                           <div className="text-sm text-gray-500 truncate">
-                            {/* Giữ truncate cho tên nhà cung cấp để giữ gọn */}
                             {item.ten_nha_cung_cap}
                           </div>
                         </TableCell>
-                        {/* END - Ô TÀI SẢN */}
 
-                        {/* DANH MỤC - 15% */}
+                        {/* 2. DANH MỤC - 15% (Đã loại bỏ whitespace-nowrap, căn lề trên) */}
                         <TableCell className="text-center px-4 py-4 w-[15%] align-top">
                           <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs inline-block font-medium">
                             {categories.find((c) => c.id === item.danh_muc_tai_san_id)
@@ -520,8 +530,9 @@ export default function AssetManager() {
                           </span>
                         </TableCell>
 
-                        {/* THÔNG TIN - 35% */}
+                        {/* 3. THÔNG TIN - 35% (Cuộn dọc, căn lề trên) */}
                         <TableCell className="text-left align-top px-4 py-2 w-[35%]">
+                          {/* Giữ max-h và cuộn dọc để giới hạn chiều cao hàng */}
                           <div className="space-y-1 p-2 bg-gray-50 rounded text-sm max-h-20 overflow-y-auto border border-gray-200">
                             <ul className="list-disc ml-4 space-y-0.5">
                               {item.thong_tin &&
@@ -536,6 +547,7 @@ export default function AssetManager() {
                                   </li>
                                 ))}
                             </ul>
+                            {/* Trường hợp không có thông tin */}
                             {(!item.thong_tin ||
                               Object.keys(item.thong_tin).length === 0) && (
                                 <div className="text-center text-gray-500 italic py-2">
@@ -545,21 +557,21 @@ export default function AssetManager() {
                           </div>
                         </TableCell>
 
-                        {/* NGÀY ĐĂNG KÝ - 10% */}
+                        {/* 4. NGÀY ĐĂNG KÝ - 10% (Giữ whitespace-nowrap vì là ngày tháng) */}
                         <TableCell className="text-center px-4 py-4 w-[10%] align-top">
                           <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs whitespace-nowrap inline-block">
                             {item?.ngay_dang_ky || "N/A"}
                           </span>
                         </TableCell>
 
-                        {/* NGÀY HẾT HẠN - 10% */}
+                        {/* 5. NGÀY HẾT HẠN - 10% (Giữ whitespace-nowrap vì là ngày tháng) */}
                         <TableCell className="text-center px-4 py-4 w-[10%] align-top">
                           <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs whitespace-nowrap inline-block">
                             {item?.ngay_het_han || "N/A"}
                           </span>
                         </TableCell>
 
-                        {/* THAO TÁC - 10% */}
+                        {/* 6. THAO TÁC - 10% */}
                         <TableCell className="text-center px-4 py-4 w-[10%] align-top">
                           <div className="flex justify-center items-center gap-1">
                             <Button
