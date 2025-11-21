@@ -1,15 +1,23 @@
 const nodemailer = require("nodemailer");
 
 const sendMail = async (options) => {
-  const transporter = nodemailer.createTransport({
+  const transporter = nodemailer.createTransporter({
     host: process.env.SMPT_HOST,
-    port: parseInt(process.env.SMPT_PORT),
+    port: parseInt(process.env.SMPT_PORT) || 587,
     service: process.env.SMPT_SERVICE,
     auth: {
       user: process.env.SMPT_MAIL,
       pass: process.env.SMPT_PASSWORD,
     },
-    secure: false, // true for 465, false for other ports
+    secure:
+      process.env.SMPT_SECURE === "true" ||
+      parseInt(process.env.SMPT_PORT) === 465,
+    tls: {
+      rejectUnauthorized: false,
+    },
+    connectionTimeout: 60000, // 60 giây
+    greetingTimeout: 30000, // 30 giây
+    socketTimeout: 60000, // 60 giây
   });
   const expiry = new Date(options.expiryDate).toLocaleString("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh",
@@ -64,7 +72,6 @@ const sendMail = async (options) => {
             </div>
         `;
   } else if (options.email_ql) {
-    console.log("ql ", options.email_ql);
     data_html = options.html;
   } else if (options.email_forgot) {
     data_html = `
@@ -114,7 +121,24 @@ const sendMail = async (options) => {
     html: data_html,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    console.log("Attempting to send email to:", options.email);
+    console.log("SMTP Config:", {
+      host: process.env.SMPT_HOST,
+      port: parseInt(process.env.SMPT_PORT) || 587,
+      service: process.env.SMPT_SERVICE,
+      secure:
+        process.env.SMPT_SECURE === "true" ||
+        parseInt(process.env.SMPT_PORT) === 465,
+    });
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully:", result.messageId);
+    return result;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new Error(`Không thể gửi email: ${error.message}`);
+  }
 };
 
 module.exports = sendMail;
