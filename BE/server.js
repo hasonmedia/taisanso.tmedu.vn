@@ -39,7 +39,7 @@ const setupCronJobs = () => {
     }
   });
 
-  cron.schedule("39 10 * * *", async () => {
+  cron.schedule("19 11 * * *", async () => {
     try {
       const urgentCheck = await axios.get(
         "https://taisanso.tmedu.vn/api/admin/tai_san_sap_het_han"
