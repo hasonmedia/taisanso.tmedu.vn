@@ -294,7 +294,7 @@ export default function AssetManager() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto p-4 space-y-6">
+      <div className="max-w-full mx-auto p-4 space-y-6">
         <div className="bg-white rounded-lg shadow-sm p-4 md:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex-1 min-w-0">
@@ -472,8 +472,8 @@ export default function AssetManager() {
                 <Table className="min-w-full table-fixed">
                   <TableHeader className="bg-gradient-to-r from-blue-50 to-blue-100">
                     <TableRow>
-                      {/* TÀI SẢN: 20% */}
-                      <TableHead className="text-left font-semibold text-gray-700 px-4 py-4 w-[20%]">
+                      {/* TÀI SẢN: 25% */}
+                      <TableHead className="text-left font-semibold text-gray-700 px-4 py-4 w-[25%]">
                         TÀI SẢN
                       </TableHead>
 
@@ -482,8 +482,8 @@ export default function AssetManager() {
                         DANH MỤC
                       </TableHead>
 
-                      {/* THÔNG TIN: 35% */}
-                      <TableHead className="text-left font-semibold text-gray-700 px-4 py-4 w-[35%]">
+                      {/* THÔNG TIN: 30% */}
+                      <TableHead className="text-left font-semibold text-gray-700 px-4 py-4 w-[30%]">
                         THÔNG TIN
                       </TableHead>
 
@@ -510,19 +510,18 @@ export default function AssetManager() {
                         className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
                           }`}
                       >
-                        {/* 1. TÀI SẢN - 20% (Cho phép xuống dòng, căn lề trên) */}
-                        <TableCell className="px-4 py-4 w-[20%] align-top">
-                          {/* Loại bỏ line-clamp-2 để cho phép xuống dòng */}
+                        {/* START - TÀI SẢN - 25% (Mở rộng và giữ break-words) */}
+                        <TableCell className="px-4 py-4 w-[25%] align-top">
                           <div className="font-medium text-gray-900 text-sm break-words">
                             {item.ten_tai_san}
                           </div>
-                          {/* Giữ truncate cho tên nhà cung cấp để tránh tràn ngang */}
                           <div className="text-sm text-gray-500 truncate">
                             {item.ten_nha_cung_cap}
                           </div>
                         </TableCell>
+                        {/* END - TÀI SẢN */}
 
-                        {/* 2. DANH MỤC - 15% (Đã loại bỏ whitespace-nowrap, căn lề trên) */}
+                        {/* DANH MỤC - 15% */}
                         <TableCell className="text-center px-4 py-4 w-[15%] align-top">
                           <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs inline-block font-medium">
                             {categories.find((c) => c.id === item.danh_muc_tai_san_id)
@@ -530,9 +529,8 @@ export default function AssetManager() {
                           </span>
                         </TableCell>
 
-                        {/* 3. THÔNG TIN - 35% (Cuộn dọc, căn lề trên) */}
-                        <TableCell className="text-left align-top px-4 py-2 w-[35%]">
-                          {/* Giữ max-h và cuộn dọc để giới hạn chiều cao hàng */}
+                        {/* THÔNG TIN - 30% (Thu hẹp lại) */}
+                        <TableCell className="text-left align-top px-4 py-2 w-[30%]">
                           <div className="space-y-1 p-2 bg-gray-50 rounded text-sm max-h-20 overflow-y-auto border border-gray-200">
                             <ul className="list-disc ml-4 space-y-0.5">
                               {item.thong_tin &&
@@ -557,21 +555,21 @@ export default function AssetManager() {
                           </div>
                         </TableCell>
 
-                        {/* 4. NGÀY ĐĂNG KÝ - 10% (Giữ whitespace-nowrap vì là ngày tháng) */}
+                        {/* NGÀY ĐĂNG KÝ - 10% */}
                         <TableCell className="text-center px-4 py-4 w-[10%] align-top">
                           <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs whitespace-nowrap inline-block">
                             {item?.ngay_dang_ky || "N/A"}
                           </span>
                         </TableCell>
 
-                        {/* 5. NGÀY HẾT HẠN - 10% (Giữ whitespace-nowrap vì là ngày tháng) */}
+                        {/* NGÀY HẾT HẠN - 10% */}
                         <TableCell className="text-center px-4 py-4 w-[10%] align-top">
                           <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs whitespace-nowrap inline-block">
                             {item?.ngay_het_han || "N/A"}
                           </span>
                         </TableCell>
 
-                        {/* 6. THAO TÁC - 10% */}
+                        {/* THAO TÁC - 10% */}
                         <TableCell className="text-center px-4 py-4 w-[10%] align-top">
                           <div className="flex justify-center items-center gap-1">
                             <Button

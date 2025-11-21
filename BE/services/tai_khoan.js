@@ -109,15 +109,7 @@ const forgotPassword = async (email) => {
       email_forgot: true,
     };
 
-    setImmediate(() => {
-      sendMail(mailOptions)
-        .then(() => {
-          console.log("✅ Forgot password email sent to:", user.email);
-        })
-        .catch((error) => {
-          console.error("❌ Failed to send forgot password email:", error);
-        });
-    });
+    await sendMail(mailOptions);
     return true;
   } catch (error) {
     console.error("Lỗi khi xử lý quên mật khẩu:", error);
