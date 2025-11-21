@@ -90,9 +90,9 @@ const handleCallback = async (req, res) => {
     // Chuyển hướng về frontend dựa trên role
     const redirectUrl = getRedirectUrlByRole(user.cap);
     console.log("Redirect URL:", redirectUrl);
-
+    const url = process.env.FRONTEND_URL || "http://localhost:5173";
     // Redirect về frontend với thông tin user
-    const finalRedirectUrl = `http://localhost:5173${redirectUrl}?sso=success`;
+    const finalRedirectUrl = `${url}${redirectUrl}?sso=success`;
     console.log("Final redirect URL:", finalRedirectUrl);
     res.redirect(finalRedirectUrl);
   } catch (err) {

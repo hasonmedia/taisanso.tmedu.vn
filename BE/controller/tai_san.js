@@ -47,7 +47,7 @@ const deleteTaiSan = async (req, res) => {
 
 const getTaiSanSapHetHan = async (req, res) => {
   try {
-    const result = await TaiSan.getTaiSanSapHetHan(req.user);
+    const result = await TaiSan.getTaiSanSapHetHan();
     res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });

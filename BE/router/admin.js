@@ -1337,12 +1337,7 @@ adminRouter.delete(
  *                           items:
  *                             $ref: '#/components/schemas/TaiSan'
  */
-adminRouter.get(
-  "/tai_san_sap_het_han",
-  authentication,
-  requireRole(2),
-  taiSanController.getTaiSanSapHetHan
-);
+adminRouter.get("/tai_san_sap_het_han", taiSanController.getTaiSanSapHetHan);
 
 /**
  * @swagger
@@ -1905,10 +1900,10 @@ adminRouter.post("/thong_bao", authentication, requireRole(2), addThongBao);
  *         description: Không tìm thấy thông tin user
  */
 adminRouter.get("/me", authentication, requireRole([0, 1, 2, 3]), getMe);
-adminRouter.get(
-  "/gui-mail-tai-san",
-  authentication,
-  requireRole(1),
-  mailThongBaoTaiSanHetHanController
-);
+// adminRouter.get(
+//   "/gui-mail-tai-san",
+//   authentication,
+//   requireRole(1),
+//   mailThongBaoTaiSanHetHanController
+// );
 module.exports = adminRouter;

@@ -163,7 +163,7 @@ const deleteTaiSan = async (id, user) => {
   return { message: "Tài sản đã được xóa thành công" };
 };
 
-const getTaiSanSapHetHan = async (user) => {
+const getTaiSanSapHetHan = async () => {
   const today = new Date();
   const tenDaysFromNow = new Date(today);
   tenDaysFromNow.setDate(today.getDate() + 10);

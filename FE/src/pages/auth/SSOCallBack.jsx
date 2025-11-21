@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
-
+import { BASE_URL_LOCAL } from "../../utils/constants";
 export default function SSOCallback() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -34,7 +34,8 @@ export default function SSOCallback() {
             // Chuyển hướng trực tiếp đến backend endpoint để xử lý code
             // Backend sẽ xử lý và redirect lại với sso=success
             const state = searchParams.get('state') || '';
-            window.location.href = `http://localhost:3000/api/sso/callback?code=${code}&state=${state}`;
+
+            window.location.href = `${BASE_URL_LOCAL}/sso/callback?code=${code}&state=${state}`;
 
         } catch (error) {
             console.error('Lỗi xử lý SSO code:', error);

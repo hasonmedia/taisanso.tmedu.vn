@@ -79,6 +79,7 @@ const mailThongBaoHetHan = async () => {
   }
 };
 const generateHtmlForManager = (data) => {
+  console.log(data);
   let rows = "";
   data.forEach((row, index) => {
     const expiry = new Date(row.ngay_thu_hoi).toLocaleString("vi-VN", {
@@ -154,7 +155,6 @@ const generateHtmlForAssetExpiry = (data) => {
                 <td style="padding: 8px; font-weight: bold;">${
                   asset.ten_tai_san
                 }</td>
-                <td style="padding: 8px;">${asset.danh_muc_tai_san_ten}</td>
                 <td style="padding: 8px;">${
                   asset.ten_nha_cung_cap || "Không có"
                 }</td>
@@ -242,7 +242,6 @@ const generateHtmlForAssetExpiry = (data) => {
                             <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                                 <th style="padding: 12px 8px; text-align: center; font-weight: bold;">STT</th>
                                 <th style="padding: 12px 8px; text-align: left; font-weight: bold;">Tên tài sản</th>
-                                <th style="padding: 12px 8px; text-align: left; font-weight: bold;">Danh mục</th>
                                 <th style="padding: 12px 8px; text-align: left; font-weight: bold;">Nhà cung cấp</th>
                                 <th style="padding: 12px 8px; text-align: center; font-weight: bold;">Ngày đăng ký</th>
                                 <th style="padding: 12px 8px; text-align: center; font-weight: bold;">Ngày hết hạn</th>
@@ -310,10 +309,10 @@ const generateHtmlForAssetExpiry = (data) => {
     </div>
     `;
 };
-const mailThongBaoTaiSanHetHan = async (user) => {
+const mailThongBaoTaiSanHetHan = async () => {
   try {
     // Gọi API getTaiSanSapHetHan từ services/tai_san.js
-    const expiryData = await getTaiSanSapHetHan(user);
+    const expiryData = await getTaiSanSapHetHan();
 
     // Lấy danh sách email đã cấu hình
     const recipients = await MailService.getAllMails();
