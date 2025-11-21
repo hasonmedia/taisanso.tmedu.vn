@@ -216,12 +216,6 @@ const getTaiSanSapHetHan = async (user) => {
   const upcomingAssets = results.filter(
     (asset) => asset.so_ngay_con_lai > 10 && asset.so_ngay_con_lai <= 30
   );
-  // Ghi log hành động
-  const value = {
-    loai_hanh_dong: `Kiểm tra tài sản sắp hết hạn - Tìm thấy ${results.length} tài sản cần chú ý`,
-    HanhDongId: user.hanh_dong,
-  };
-  await ChiTietHanhDong.create(value);
 
   return {
     total: results.length,
