@@ -99,7 +99,7 @@ const forgotPassword = async (email) => {
     const token = createResetToken(user.id);
 
     // Sử dụng hàm sendMail có sẵn thay vì tự tạo transporter
-    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    const frontendUrl = process.env.FRONTEND_URL || "https://taisanso.tmedu.vn";
     const resetLink = `${frontendUrl}/reset-password?token=${token}`;
 
     const mailOptions = {
