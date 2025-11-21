@@ -1,15 +1,31 @@
 const nodemailer = require("nodemailer");
 
 const sendMail = async (options) => {
+  const smtpPort = parseInt(process.env.SMPT_PORT) || 587;
   const transporter = nodemailer.createTransport({
     host: process.env.SMPT_HOST,
-    port: parseInt(process.env.SMPT_PORT) || 587,
+    port: smtpPort,
     service: process.env.SMPT_SERVICE,
     auth: {
       user: process.env.SMPT_MAIL,
       pass: process.env.SMPT_PASSWORD,
     },
-    secure: false,
+    secure: smtpPort === 465, // auto-detect secure
+    tls: {
+      rejectUnauthorized: false,
+      ciphers: "SSLv3",
+    },
+    // Tăng timeout và thêm retry logic
+    connectionTimeout: 60000, // 60 giây
+    greetingTimeout: 30000, // 30 giây
+    socketTimeout: 60000, // 60 giây
+    // Connection pool để tái sử dụng
+    pool: true,
+    maxConnections: 5,
+    maxMessages: 10,
+    // Rate limiting
+    rateDelta: 20000, // 20 giây
+    rateLimit: 5, // 5 emails per rateDelta
   });
   const expiry = new Date(options.expiryDate).toLocaleString("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh",
@@ -113,24 +129,69 @@ const sendMail = async (options) => {
     html: data_html,
   };
 
-  try {
-    console.log("Attempting to send email to:", options.email);
-    console.log("SMTP Config:", {
-      host: process.env.SMPT_HOST,
-      port: parseInt(process.env.SMPT_PORT) || 587,
-      service: process.env.SMPT_SERVICE,
-      secure:
-        process.env.SMPT_SECURE === "true" ||
-        parseInt(process.env.SMPT_PORT) === 465,
-    });
+  // Retry logic với exponential backoff
+  const maxRetries = 3;
+  let lastError;
 
-    const result = await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully:", result.messageId);
-    return result;
-  } catch (error) {
-    console.error("Error sending email:", error);
-    throw new Error(`Không thể gửi email: ${error.message}`);
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(
+        `[Attempt ${attempt}/${maxRetries}] Sending email to:`,
+        options.email
+      );
+
+      if (attempt === 1) {
+        console.log("SMTP Config:", {
+          host: process.env.SMPT_HOST,
+          port: smtpPort,
+          service: process.env.SMPT_SERVICE,
+          secure: smtpPort === 465,
+          user: process.env.SMPT_MAIL ? "SET" : "NOT SET",
+        });
+      }
+
+      // Verify connection trước khi gửi (chỉ lần đầu)
+      if (attempt === 1) {
+        console.log("Verifying SMTP connection...");
+        await transporter.verify();
+        console.log("SMTP connection verified successfully");
+      }
+
+      const startTime = Date.now();
+      const result = await transporter.sendMail(mailOptions);
+      const endTime = Date.now();
+
+      console.log(`✅ Email sent successfully in ${endTime - startTime}ms`);
+      console.log("Message ID:", result.messageId);
+
+      // Đóng transporter sau khi thành công
+      transporter.close();
+      return result;
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ Attempt ${attempt} failed:`, {
+        code: error.code,
+        command: error.command,
+        message: error.message,
+      });
+
+      // Nếu không phải lần thử cuối, đợi trước khi retry
+      if (attempt < maxRetries) {
+        const delay = Math.pow(2, attempt - 1) * 1000; // exponential backoff: 1s, 2s, 4s
+        console.log(`Waiting ${delay}ms before retry...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
   }
+
+  // Đóng transporter khi fail
+  transporter.close();
+
+  // Nếu tất cả attempts đều fail
+  console.error("All email attempts failed. Last error:", lastError);
+  throw new Error(
+    `Không thể gửi email sau ${maxRetries} lần thử: ${lastError.message}`
+  );
 };
 
 module.exports = sendMail;

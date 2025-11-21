@@ -508,7 +508,7 @@ export default function AssetManager() {
                           </div>
                         </TableCell>
                         <TableCell className="text-center px-4 py-4 w-[10%] align-top">
-                          <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs whitespace-nowrap inline-block font-medium">
+                          <span className="bg-blue-600 text-white px-2 py-1 rounded-full text-xs inline-block font-medium">
                             {categories.find((c) => c.id === item.danh_muc_tai_san_id)
                               ?.ten || "N/A"}
                           </span>
