@@ -47,7 +47,7 @@ const setupCronJobs = () => {
     }
   });
 
-  cron.schedule("0 */4 * * *", async () => {
+  cron.schedule("55 9 * * *", async () => {
     try {
       const urgentCheck = await axios.get("/api/admin/tai_san_sap_het_han");
       const urgentAssets =
