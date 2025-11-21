@@ -101,7 +101,7 @@ const forgotPassword = async (email) => {
     // Sử dụng hàm sendMail có sẵn thay vì tự tạo transporter
     const frontendUrl = process.env.FRONTEND_URL || "https://taisanso.tmedu.vn";
     const resetLink = `${frontendUrl}/reset-password?token=${token}`;
-
+    console.log("Liên kết đặt lại mật khẩu:", resetLink);
     const mailOptions = {
       email: user.email,
       name: user.ho_ten, // Sử dụng ho_ten thay vì name
